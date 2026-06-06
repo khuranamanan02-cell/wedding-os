@@ -751,222 +751,297 @@ function VendorCard({ vendor, onUpd, onDel, statusColors }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SCREEN: GUESTS
+// SCREEN: GUESTS — fully rebuilt, no crash
 // ═══════════════════════════════════════════════════════════════════════════════
+const SAMPLE_GUESTS = [
+  { id:1, sno:1, name:"Rahul Sharma",  from:"Delhi",      side:"Groom", fn:"Wedding", hotel:"",        rsvp:"confirmed", notes:"" },
+  { id:2, sno:2, name:"Priya Singh",   from:"Mumbai",     side:"Bride", fn:"Sangeet", hotel:"Hotel A", rsvp:"pending",   notes:"Veg" },
+  { id:3, sno:3, name:"Amit Kapoor",   from:"Chandigarh", side:"Groom", fn:"Wedding", hotel:"Hotel B", rsvp:"confirmed", notes:"" },
+];
+
 function Guests() {
-  const [guests,  setGuests]  = useState(INIT_GUESTS);
+  const [gList,   setGList]   = useState(SAMPLE_GUESTS);
   const [adding,  setAdding]  = useState(false);
   const [search,  setSearch]  = useState("");
-  const [filter,  setFilter]  = useState("All");
+  const [fnFilter,setFnFilter]= useState("All");
+  const [sideTab, setSideTab] = useState("All");
   const [ng, setNg] = useState({ name:"", from:"", side:"Groom", fn:"Wedding", hotel:"", rsvp:"pending", notes:"" });
   const fileRef = useRef();
 
   const RSVP_C = { confirmed:T.success, pending:T.warn, declined:T.danger };
   const FNS    = ["All","Wedding","Sangeet","Mehendi","Haldi"];
+  const SIDES  = ["All","Groom","Bride"];
 
-  const INIT_GUESTS_LOCAL = [
-    { id:1, sno:1, name:"Example Guest", from:"Delhi", side:"Groom", fn:"Wedding", hotel:"", rsvp:"confirmed", notes:"" },
-  ];
-  const [gList, setGList] = useState(INIT_GUESTS_LOCAL);
-
-  const filtered = gList.filter(g =>
-    (filter==="All" || g.fn===filter) &&
-    (g.name.toLowerCase().includes(search.toLowerCase()) || g.from.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filtered = gList.filter(g => {
+    const matchSide = sideTab === "All" || g.side === sideTab;
+    const matchFn   = fnFilter === "All" || g.fn === fnFilter;
+    const q = search.toLowerCase();
+    const matchQ = !q || g.name.toLowerCase().includes(q) || (g.from||"").toLowerCase().includes(q);
+    return matchSide && matchFn && matchQ;
+  });
 
   const addG = () => {
     if (!ng.name.trim()) return;
-    const sno = gList.length + 1;
-    setGList(p => [...p, { ...ng, id:Date.now(), sno }]);
+    setGList(p => [...p, { ...ng, id:Date.now(), sno:p.length+1 }]);
     setNg({ name:"", from:"", side:"Groom", fn:"Wedding", hotel:"", rsvp:"pending", notes:"" });
     setAdding(false);
   };
+  const delG = id => setGList(p => p.filter(g => g.id!==id));
+  const updG = (id,f,v) => setGList(p => p.map(g => g.id===id ? {...g,[f]:v} : g));
 
-  const delG  = id => setGList(p => p.filter(g => g.id!==id));
-  const updG  = (id,f,v) => setGList(p => p.map(g => g.id===id ? {...g,[f]:v} : g));
-
-  // ── CSV / Excel upload ─────────────────────────────────────────────────────
   const handleFile = e => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => {
       try {
-        const wb   = XLSX.read(ev.target.result, { type:"binary" });
+        const data = new Uint8Array(ev.target.result);
+        const wb   = XLSX.read(data, { type:"array" });
         const ws   = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws);
         const mapped = rows.map((r,i) => ({
-          id:   Date.now() + i,
-          sno:  r["S.No"]      || r["sno"]     || r["serial"]   || gList.length + i + 1,
-          name: r["Name"]      || r["name"]     || "",
-          from: r["From"]      || r["from"]     || r["City"]     || r["city"] || "",
-          side: r["Side"]      || r["side"]     || "Groom",
-          fn:   r["Function"]  || r["fn"]       || "Wedding",
-          hotel:r["Hotel"]     || r["hotel"]    || "",
-          rsvp: r["RSVP"]      || r["rsvp"]     || "pending",
-          notes:r["Notes"]     || r["notes"]    || "",
+          id:   Date.now()+i,
+          sno:  r["S.No"]||r["sno"]||r["serial"]||gList.length+i+1,
+          name: String(r["Name"]||r["name"]||"").trim(),
+          from: String(r["From"]||r["from"]||r["City"]||r["city"]||"").trim(),
+          side: r["Side"]||r["side"]||"Groom",
+          fn:   r["Function"]||r["fn"]||"Wedding",
+          hotel:String(r["Hotel"]||r["hotel"]||"").trim(),
+          rsvp: String(r["RSVP"]||r["rsvp"]||"pending").toLowerCase(),
+          notes:String(r["Notes"]||r["notes"]||"").trim(),
         })).filter(r => r.name);
         setGList(p => [...p, ...mapped]);
-        alert(`✓ Imported ${mapped.length} guests successfully!`);
-      } catch (err) {
-        alert("Error reading file. Please use the downloaded template format.");
+        alert(`✓ ${mapped.length} guests imported!`);
+      } catch(err) {
+        alert("Could not read file. Download and use the template provided.");
       }
     };
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
     e.target.value = "";
   };
 
   const downloadTemplate = () => {
-    const ws = XLSX.utils.aoa_to_sheet([
-      ["S.No","Name","From","Side","Function","Hotel","RSVP","Notes"],
-      [1,"Rahul Sharma","Delhi","Groom","Wedding","Hotel A","confirmed",""],
-      [2,"Priya Singh","Mumbai","Bride","Sangeet","Hotel B","pending","Vegetarian"],
-      [3,"Amit Kapoor","Chandigarh","Groom","Haldi","","pending",""],
-    ]);
-    ws["!cols"] = [8,20,16,10,12,14,12,20].map(w => ({ wch:w }));
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Guests");
-    XLSX.writeFile(wb, "MS_Wedding_Guest_Template.xlsx");
+    try {
+      const ws = XLSX.utils.aoa_to_sheet([
+        ["S.No","Name","From","Side","Function","Hotel","RSVP","Notes"],
+        [1,"Rahul Sharma","Delhi","Groom","Wedding","Hotel A","confirmed",""],
+        [2,"Priya Singh","Mumbai","Bride","Sangeet","Hotel B","pending","Vegetarian"],
+        [3,"Amit Kapoor","Chandigarh","Groom","Haldi","","pending",""],
+      ]);
+      ws["!cols"] = [6,22,16,10,12,14,12,22].map(w=>({wch:w}));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Guests");
+      XLSX.writeFile(wb, "MS_Wedding_Guest_Template.xlsx");
+    } catch(err) {
+      alert("Template download failed. Please try again.");
+    }
   };
 
-  const confirmed = gList.filter(g => g.rsvp==="confirmed").length;
-  const pending   = gList.filter(g => g.rsvp==="pending").length;
+  const exportList = () => {
+    try {
+      const rows = gList.map(g => ({
+        "S.No":g.sno, "Name":g.name, "From":g.from, "Side":g.side,
+        "Function":g.fn, "Hotel":g.hotel, "RSVP":g.rsvp, "Notes":g.notes,
+      }));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws["!cols"] = [6,22,16,10,12,14,12,22].map(w=>({wch:w}));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Guests");
+      XLSX.writeFile(wb, "MS_Wedding_Guests.xlsx");
+    } catch(err) {
+      alert("Export failed. Please try again.");
+    }
+  };
+
+  // ── Stats ──────────────────────────────────────────────────────────────────
+  const total     = gList.length;
+  const confirmed = gList.filter(g=>g.rsvp==="confirmed").length;
+  const pending   = gList.filter(g=>g.rsvp==="pending").length;
+  const declined  = gList.filter(g=>g.rsvp==="declined").length;
+  const groomSide = gList.filter(g=>g.side==="Groom").length;
+  const brideSide = gList.filter(g=>g.side==="Bride").length;
+  const confPct   = total > 0 ? (confirmed/total)*100 : 0;
+
+  const fnCounts = ["Wedding","Sangeet","Mehendi","Haldi"].map(f=>({
+    f, n:gList.filter(g=>g.fn===f).length,
+    icon:f==="Wedding"?"💍":f==="Sangeet"?"🎵":f==="Mehendi"?"🌿":"💛",
+  }));
 
   return (
     <div style={{ paddingBottom:100 }}>
-      <Header title="Guests" sub={`${gList.length} added`}/>
+      <Header title="Guests" sub={`${total} total`}/>
       <div style={{ padding:"16px 20px" }}>
 
-        {/* Summary */}
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:14 }}>
+        {/* ── Big RSVP stats ── */}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, marginBottom:14 }}>
           {[
-            { l:"Wedding",  n:"550–600", icon:"💍" },
-            { l:"Sangeet",  n:"250–300", icon:"🎵" },
-            { l:"Mehendi",  n:"150–200", icon:"🌿" },
-            { l:"Haldi",    n:"100–150", icon:"💛" },
-          ].map(s => (
-            <Card key={s.l}>
-              <div style={{ fontSize:20 }}>{s.icon}</div>
-              <div style={{ fontSize:9, color:T.muted, marginTop:6, textTransform:"uppercase", letterSpacing:1 }}>{s.l}</div>
-              <div className="cd" style={{ fontSize:20, fontWeight:700, color:T.navy }}>{s.n}</div>
+            { l:"Total",     v:total,     c:T.navy    },
+            { l:"Coming",    v:confirmed, c:T.success },
+            { l:"Pending",   v:pending,   c:T.warn    },
+            { l:"Declined",  v:declined,  c:T.danger  },
+          ].map(s=>(
+            <div key={s.l} style={{ background:T.white, borderRadius:12, padding:"10px 8px", border:`1px solid ${T.border}`, textAlign:"center" }}>
+              <div className="cd" style={{ fontSize:22, fontWeight:700, color:s.c }}>{s.v}</div>
+              <div style={{ fontSize:9, color:T.muted, marginTop:3, textTransform:"uppercase", letterSpacing:0.8 }}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── RSVP progress bar ── */}
+        <Card style={{ marginBottom:14 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
+            <span style={{ fontSize:11, color:T.muted, fontWeight:500 }}>RSVP Progress</span>
+            <span style={{ fontSize:11, color:T.success, fontWeight:600 }}>{confPct.toFixed(0)}% confirmed</span>
+          </div>
+          <div style={{ background:T.cream, borderRadius:20, height:10, overflow:"hidden" }}>
+            <div style={{ height:"100%", width:`${confPct}%`, background:`linear-gradient(90deg,${T.success},${T.dusty})`, borderRadius:20, transition:"width 0.6s" }}/>
+          </div>
+          <div style={{ display:"flex", justifyContent:"space-between", marginTop:8 }}>
+            <span style={{ fontSize:10, color:T.muted }}>🤵 Groom side: {groomSide}</span>
+            <span style={{ fontSize:10, color:T.muted }}>👰 Bride side: {brideSide}</span>
+          </div>
+        </Card>
+
+        {/* ── Function breakdown ── */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:14 }}>
+          {fnCounts.map(f=>(
+            <Card key={f.f} style={{ padding:"10px 14px" }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <div>
+                  <div style={{ fontSize:10, color:T.muted, textTransform:"uppercase", letterSpacing:1 }}>{f.f}</div>
+                  <div className="cd" style={{ fontSize:22, fontWeight:700, color:T.navy, marginTop:2 }}>{f.n}</div>
+                </div>
+                <span style={{ fontSize:24, opacity:0.6 }}>{f.icon}</span>
+              </div>
             </Card>
           ))}
         </div>
 
-        {/* Hotel pill */}
-        <div style={{ background:T.navy, borderRadius:14, padding:"14px 18px", marginBottom:14, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        {/* ── Hotel rooms ── */}
+        <div style={{ background:T.navy, borderRadius:14, padding:"12px 18px", marginBottom:14, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
           <div>
-            <div style={{ fontSize:9, color:"rgba(255,255,255,0.4)", letterSpacing:2, textTransform:"uppercase" }}>Hotel Rooms Booked</div>
-            <div className="cd" style={{ fontSize:30, color:T.goldLight, fontWeight:700, marginTop:2 }}>80 Rooms</div>
+            <div style={{ fontSize:9, color:"rgba(255,255,255,0.4)", letterSpacing:2, textTransform:"uppercase" }}>Hotel Rooms</div>
+            <div className="cd" style={{ fontSize:26, color:T.goldLight, fontWeight:700, marginTop:2 }}>80 Booked</div>
             <div style={{ fontSize:11, color:"rgba(255,255,255,0.35)", marginTop:2 }}>40 Groom · 40 Bride</div>
           </div>
-          <div style={{ fontSize:42, opacity:0.12 }}>🏨</div>
+          <span style={{ fontSize:36, opacity:0.12 }}>🏨</span>
         </div>
 
-        {/* RSVP bar */}
+        {/* ── Upload / Export / Template ── */}
         <Card style={{ marginBottom:14 }}>
-          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
-            <span style={{ fontSize:11, color:T.muted }}>RSVP Status</span>
-            <span style={{ fontSize:11, color:T.charcoal, fontWeight:500 }}>{confirmed} confirmed · {pending} pending</span>
+          <div className="cd" style={{ fontSize:14, fontWeight:700, color:T.navy, marginBottom:6 }}>📤 Excel Tools</div>
+          <div style={{ fontSize:11, color:T.muted, marginBottom:12, lineHeight:1.6 }}>
+            Columns: <strong style={{ color:T.charcoal }}>S.No · Name · From · Side · Function · Hotel · RSVP · Notes</strong>
           </div>
-          <div style={{ background:T.cream, borderRadius:20, height:8, overflow:"hidden" }}>
-            <div style={{ height:"100%", width:`${gList.length>0?(confirmed/gList.length)*100:0}%`, background:T.success, borderRadius:20, transition:"width 0.6s" }}/>
-          </div>
-        </Card>
-
-        {/* Bulk upload */}
-        <Card style={{ marginBottom:14 }}>
-          <div className="cd" style={{ fontSize:14, fontWeight:700, color:T.navy, marginBottom:8 }}>📤 Bulk Upload</div>
-          <div style={{ fontSize:12, color:T.muted, marginBottom:12, lineHeight:1.7 }}>
-            Upload your full guest list as Excel. Columns:<br/>
-            <strong style={{ color:T.charcoal }}>S.No · Name · From · Side · Function · Hotel · RSVP · Notes</strong>
-          </div>
-          <div style={{ display:"flex", gap:8 }}>
-            <button onClick={downloadTemplate} style={{ flex:1, padding:"10px", borderRadius:10, background:T.cream, border:`1px solid ${T.border}`, cursor:"pointer", fontSize:12, color:T.charcoal, fontWeight:500 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
+            <button onClick={downloadTemplate} style={{ padding:"9px 4px", borderRadius:10, background:T.cream, border:`1px solid ${T.border}`, cursor:"pointer", fontSize:11, color:T.charcoal, fontWeight:500 }}>
               ⬇ Template
             </button>
-            <button onClick={() => fileRef.current.click()} style={{ flex:1, padding:"10px", borderRadius:10, background:T.dusty, border:"none", cursor:"pointer", fontSize:12, color:T.white, fontWeight:600 }}>
-              ⬆ Upload Excel
+            <button onClick={()=>fileRef.current.click()} style={{ padding:"9px 4px", borderRadius:10, background:T.dusty, border:"none", cursor:"pointer", fontSize:11, color:T.white, fontWeight:600 }}>
+              ⬆ Upload
+            </button>
+            <button onClick={exportList} style={{ padding:"9px 4px", borderRadius:10, background:T.navy, border:"none", cursor:"pointer", fontSize:11, color:T.white, fontWeight:600 }}>
+              ⬇ Export
             </button>
           </div>
           <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleFile} style={{ display:"none" }}/>
         </Card>
 
-        {/* Search + filter */}
-        <input placeholder="🔍  Search by name or city…" value={search} onChange={e => setSearch(e.target.value)}
-          style={{ width:"100%", padding:"10px 14px", borderRadius:12, border:`1px solid ${T.border}`, fontSize:13, marginBottom:10, boxSizing:"border-box", background:T.white }}/>
-        <div style={{ display:"flex", gap:8, overflowX:"auto", paddingBottom:10, marginBottom:12 }}>
-          {FNS.map(f => <Pill key={f} active={filter===f} onClick={() => setFilter(f)}>{f}</Pill>)}
+        {/* ── Side tabs ── */}
+        <div style={{ display:"flex", gap:8, marginBottom:10 }}>
+          {SIDES.map(s=>(
+            <button key={s} onClick={()=>setSideTab(s)} style={{
+              flex:1, padding:"9px", borderRadius:10, border:"none", cursor:"pointer", fontSize:12, fontWeight:600,
+              background:sideTab===s?T.navy:T.cream, color:sideTab===s?T.white:T.muted, transition:"all 0.2s",
+            }}>
+              {s==="All"?"All Guests":s==="Groom"?"🤵 Groom":"👰 Bride"}
+            </button>
+          ))}
         </div>
 
-        <AddBtn onClick={() => setAdding(!adding)} label="+ Add Guest" active={adding}/>
+        {/* ── Function filter ── */}
+        <div style={{ display:"flex", gap:8, overflowX:"auto", paddingBottom:10, marginBottom:12 }}>
+          {FNS.map(f=><Pill key={f} active={fnFilter===f} onClick={()=>setFnFilter(f)}>{f}</Pill>)}
+        </div>
+
+        {/* ── Search ── */}
+        <input placeholder="🔍  Search by name or city…" value={search} onChange={e=>setSearch(e.target.value)}
+          style={{ width:"100%", padding:"10px 14px", borderRadius:12, border:`1px solid ${T.border}`, fontSize:13, marginBottom:12, boxSizing:"border-box", background:T.white }}/>
+
+        <AddBtn onClick={()=>setAdding(!adding)} label="+ Add Guest" active={adding}/>
 
         {adding && (
           <Card style={{ marginBottom:14 }}>
-            <input placeholder="Full name *" value={ng.name} onChange={e => setNg(p=>({...p,name:e.target.value}))}
+            <input placeholder="Full name *" value={ng.name} onChange={e=>setNg(p=>({...p,name:e.target.value}))}
               style={{ width:"100%", padding:"10px 12px", borderRadius:8, border:`1px solid ${T.border}`, fontSize:14, marginBottom:8, boxSizing:"border-box" }}/>
-            <input placeholder="Coming from (city)" value={ng.from} onChange={e => setNg(p=>({...p,from:e.target.value}))}
+            <input placeholder="Coming from (city)" value={ng.from} onChange={e=>setNg(p=>({...p,from:e.target.value}))}
               style={{ width:"100%", padding:"10px 12px", borderRadius:8, border:`1px solid ${T.border}`, fontSize:13, marginBottom:8, boxSizing:"border-box" }}/>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:8 }}>
-              <select value={ng.side} onChange={e => setNg(p=>({...p,side:e.target.value}))}
+              <select value={ng.side} onChange={e=>setNg(p=>({...p,side:e.target.value}))}
                 style={{ padding:"8px 10px", borderRadius:8, border:`1px solid ${T.border}`, fontSize:12 }}>
                 <option>Groom</option><option>Bride</option>
               </select>
-              <select value={ng.fn} onChange={e => setNg(p=>({...p,fn:e.target.value}))}
+              <select value={ng.fn} onChange={e=>setNg(p=>({...p,fn:e.target.value}))}
                 style={{ padding:"8px 10px", borderRadius:8, border:`1px solid ${T.border}`, fontSize:12 }}>
                 <option>Wedding</option><option>Sangeet</option><option>Mehendi</option><option>Haldi</option>
               </select>
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:10 }}>
-              <input placeholder="Hotel assigned" value={ng.hotel} onChange={e => setNg(p=>({...p,hotel:e.target.value}))}
+              <input placeholder="Hotel assigned" value={ng.hotel} onChange={e=>setNg(p=>({...p,hotel:e.target.value}))}
                 style={{ padding:"8px 12px", borderRadius:8, border:`1px solid ${T.border}`, fontSize:12, boxSizing:"border-box" }}/>
-              <select value={ng.rsvp} onChange={e => setNg(p=>({...p,rsvp:e.target.value}))}
+              <select value={ng.rsvp} onChange={e=>setNg(p=>({...p,rsvp:e.target.value}))}
                 style={{ padding:"8px 10px", borderRadius:8, border:`1px solid ${T.border}`, fontSize:12 }}>
-                <option>pending</option><option>confirmed</option><option>declined</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="declined">Declined</option>
               </select>
             </div>
             <button onClick={addG} style={{ width:"100%", padding:"12px", borderRadius:10, background:T.dusty, color:T.white, border:"none", cursor:"pointer", fontSize:14, fontWeight:600 }}>Add Guest</button>
           </Card>
         )}
 
+        {/* ── Guest list ── */}
         <SectionLabel right={`${filtered.length} shown`}>Guest List</SectionLabel>
 
-        {filtered.map(g => (
-          <div key={g.id} style={{ background:T.white, borderRadius:12, padding:"12px 14px", marginBottom:8, border:`1px solid ${T.border}` }}>
+        {filtered.length===0 && (
+          <div style={{ textAlign:"center", padding:"40px 20px", color:T.muted, fontSize:13 }}>
+            {total===0 ? "No guests yet — add one above or upload Excel" : "No guests match your filters"}
+          </div>
+        )}
+
+        {filtered.map(g=>(
+          <div key={g.id} style={{
+            background:T.white, borderRadius:12, padding:"12px 14px", marginBottom:8,
+            border:`1px solid ${T.border}`,
+            borderLeft:`3px solid ${g.side==="Groom"?T.navy:T.dusty}`,
+          }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8 }}>
               <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  <span style={{ fontSize:10, color:T.muted, fontWeight:600, flexShrink:0 }}>#{g.sno}</span>
-                  <IE value={g.name} onChange={v => updG(g.id,"name",v)} style={{ fontSize:13, fontWeight:600, color:T.charcoal }}/>
+                <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                  <span style={{ fontSize:9, color:T.muted, fontWeight:700, flexShrink:0 }}>#{g.sno}</span>
+                  <IE value={g.name} onChange={v=>updG(g.id,"name",v)} style={{ fontSize:13, fontWeight:600, color:T.charcoal }}/>
                 </div>
-                <div style={{ fontSize:11, color:T.muted, marginTop:4, display:"flex", gap:8, flexWrap:"wrap" }}>
-                  {g.from && <span>📍 {g.from}</span>}
-                  <span>{g.side} side</span>
-                  <span>· {g.fn}</span>
-                  {g.hotel && <span>· {g.hotel}</span>}
+                <div style={{ display:"flex", gap:8, marginTop:4, flexWrap:"wrap", alignItems:"center" }}>
+                  {g.from&&<span style={{ fontSize:10, color:T.muted }}>📍{g.from}</span>}
+                  <span style={{ fontSize:10, background:g.side==="Groom"?T.navy+"22":T.dusty+"22", color:g.side==="Groom"?T.navy:T.dusty, padding:"1px 6px", borderRadius:6, fontWeight:500 }}>{g.side}</span>
+                  <span style={{ fontSize:10, color:T.muted }}>· {g.fn}</span>
+                  {g.hotel&&<span style={{ fontSize:10, color:T.muted }}>🏨 {g.hotel}</span>}
                 </div>
               </div>
               <div style={{ display:"flex", gap:6, alignItems:"center", flexShrink:0 }}>
-                <select value={g.rsvp} onChange={e => updG(g.id,"rsvp",e.target.value)}
-                  style={{
-                    padding:"4px 8px", borderRadius:8, border:`1px solid ${T.border}`, fontSize:10,
-                    background:(RSVP_C[g.rsvp]||T.muted)+"22", color:RSVP_C[g.rsvp]||T.muted, fontWeight:600,
-                  }}>
-                  <option value="pending">pending</option>
-                  <option value="confirmed">confirmed</option>
-                  <option value="declined">declined</option>
+                <select value={g.rsvp} onChange={e=>updG(g.id,"rsvp",e.target.value)} style={{
+                  padding:"4px 6px", borderRadius:8, border:`1px solid ${T.border}`, fontSize:10,
+                  background:(RSVP_C[g.rsvp]||T.muted)+"22", color:RSVP_C[g.rsvp]||T.muted, fontWeight:700,
+                }}>
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Coming ✓</option>
+                  <option value="declined">Declined</option>
                 </select>
-                <button onClick={() => delG(g.id)} style={{ background:"none", border:"none", cursor:"pointer", color:T.danger, fontSize:16, padding:"0 2px", lineHeight:1 }}>×</button>
+                <button onClick={()=>delG(g.id)} style={{ background:"none", border:"none", cursor:"pointer", color:T.danger, fontSize:18, padding:"0 2px", lineHeight:1 }}>×</button>
               </div>
             </div>
           </div>
         ))}
-
-        {filtered.length === 0 && (
-          <div style={{ textAlign:"center", padding:"40px 20px", color:T.muted, fontSize:13 }}>
-            No guests here yet. Add one above or upload your Excel file.
-          </div>
-        )}
       </div>
     </div>
   );
