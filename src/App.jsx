@@ -164,7 +164,7 @@ function Home({ tasks, budget, vendors, guests }) {
   useEffect(() => { if (seconds !== prevSec.current) { setSecKey(k=>k+1); prevSec.current = seconds; } }, [seconds]);
 
   const tasksDone  = tasks.filter(t=>t.done).length;
-  const totalSpent = budget.items.reduce((s,i)=>s+(parseFloat(i.spent)||0),0);
+  const totalSpent = (budget.items||[]).reduce((s,i)=>s+(Number(i.spent)||0),0);
   const vendorConf = vendors.filter(v=>v.status==="confirmed").length;
 
   const SCHEDULE = [
@@ -389,88 +389,237 @@ function Tasks({ tasks, setTasks }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 function Budget({ budget, setBudget }) {
   const [adding, setAdding] = useState(false);
-  const [nw, setNw] = useState({ cat:"Misc", name:"", budget:"", spent:"" });
-  const totalSpent = budget.items.reduce((s,i)=>s+(parseFloat(i.spent)||0),0);
-  const pct = Math.round((totalSpent/budget.total)*100);
-  const upd = (id,field,val) => setBudget(b=>({
-    ...b,
-    items: b.items.map(i => i.id===id ? {
-      ...i,
-      [field]: (field==="name"||field==="cat") ? val : (parseFloat(val)||0)
-    } : i)
-  }));
-  const del = id => setBudget(b=>({...b,items:b.items.filter(i=>i.id!==id)}));
+  const [editingId, setEditingId] = useState(null);
+  const [nw, setNw] = useState({ name:"", cat:"Misc", budget:"", spent:"" });
+  const [editForm, setEditForm] = useState({});
+
+  const items = budget.items || [];
+  const totalBudget = budget.total || 0;
+  const totalSpent  = items.reduce((s,i) => s + (Number(i.spent) || 0), 0);
+  const totalAlloc  = items.reduce((s,i) => s + (Number(i.budget) || 0), 0);
+  const pct = totalBudget > 0 ? Math.min(100, Math.round((totalSpent / totalBudget) * 100)) : 0;
+
+  const CATS = ["Venue","Photography","Catering","Decor","Outfits","Entertainment","Invitations","Mehendi","Jewellery","Misc"];
+
+  const openEdit = (item) => {
+    setEditingId(item.id);
+    setEditForm({ name: item.name, cat: item.cat, budget: String(item.budget), spent: String(item.spent) });
+  };
+
+  const saveEdit = (id) => {
+    setBudget(b => ({
+      ...b,
+      items: b.items.map(i => i.id === id ? {
+        ...i,
+        name:   editForm.name,
+        cat:    editForm.cat,
+        budget: Number(editForm.budget) || 0,
+        spent:  Number(editForm.spent)  || 0,
+      } : i)
+    }));
+    setEditingId(null);
+  };
+
+  const del = (id) => setBudget(b => ({ ...b, items: b.items.filter(i => i.id !== id) }));
+
+  const addItem = () => {
+    if (!nw.name.trim()) return;
+    setBudget(b => ({
+      ...b,
+      items: [...b.items, {
+        id: Date.now(),
+        name:   nw.name,
+        cat:    nw.cat,
+        budget: Number(nw.budget) || 0,
+        spent:  Number(nw.spent)  || 0,
+      }]
+    }));
+    setNw({ name:"", cat:"Misc", budget:"", spent:"" });
+    setAdding(false);
+  };
 
   return (
     <div style={{ padding:"20px 16px 100px" }}>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
-        <div style={{ fontFamily:"'Clash Display',sans-serif", fontSize:22, fontWeight:700 }}>Budget</div>
-        <button onClick={()=>setAdding(true)} style={{ background:T.navy, color:T.white, border:"none", borderRadius:12, padding:"10px 18px", fontWeight:600, fontSize:14, cursor:"pointer" }}>+ Add</button>
-      </div>
-      <div style={{ color:T.muted, fontSize:13, marginBottom:14 }}>Total: {fmt(budget.total)}</div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:16 }}>
-        {[{label:"Spent",val:fmt(totalSpent),color:T.danger},{label:"Remaining",val:fmt(budget.total-totalSpent),color:T.success},{label:"Used",val:pct+"%",color:T.gold}].map(({label,val,color})=>(
-          <div key={label} style={{ background:T.white, borderRadius:14, padding:"14px 10px", textAlign:"center", border:`1px solid ${T.border}` }}>
+      {/* Header */}
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+        <div style={{ fontFamily:"'Clash Display',sans-serif", fontSize:22, fontWeight:700 }}>Budget</div>
+        <button onClick={() => setAdding(true)} style={{ background:T.navy, color:T.white, border:"none", borderRadius:12, padding:"10px 18px", fontWeight:600, fontSize:14, cursor:"pointer" }}>+ Add</button>
+      </div>
+
+      {/* Summary strip */}
+      <div style={{ background:`linear-gradient(135deg,${T.navy},${T.navyMid})`, borderRadius:18, padding:"18px 20px", marginBottom:16 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:12 }}>
+          <div>
+            <div style={{ color:"rgba(255,255,255,0.5)", fontSize:11, letterSpacing:1 }}>TOTAL BUDGET</div>
+            <div style={{ fontFamily:"'Clash Display',sans-serif", fontSize:22, fontWeight:700, color:T.white, marginTop:2 }}>{fmt(totalBudget)}</div>
+          </div>
+          <div style={{ textAlign:"right" }}>
+            <div style={{ color:"rgba(255,255,255,0.5)", fontSize:11, letterSpacing:1 }}>SPENT SO FAR</div>
+            <div style={{ fontFamily:"'Clash Display',sans-serif", fontSize:22, fontWeight:700, color:T.goldLight, marginTop:2 }}>{fmt(totalSpent)}</div>
+          </div>
+        </div>
+        {/* Progress bar */}
+        <div style={{ height:6, background:"rgba(255,255,255,0.15)", borderRadius:99, overflow:"hidden", marginBottom:8 }}>
+          <div style={{ height:"100%", width:pct+"%", background:`linear-gradient(90deg,${T.gold},${T.goldLight})`, borderRadius:99, transition:"width 0.5s" }} />
+        </div>
+        <div style={{ display:"flex", justifyContent:"space-between" }}>
+          <div style={{ color:"rgba(255,255,255,0.55)", fontSize:12 }}>{pct}% used</div>
+          <div style={{ color:T.goldLight, fontSize:12, fontWeight:600 }}>{fmt(totalBudget - totalSpent)} remaining</div>
+        </div>
+      </div>
+
+      {/* Mini stats */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:18 }}>
+        {[
+          { label:"Allocated across items", val:fmt(totalAlloc), color:T.navyMid },
+          { label:"Unallocated buffer",     val:fmt(totalBudget - totalAlloc), color:T.success },
+        ].map(({label,val,color}) => (
+          <div key={label} style={{ background:T.white, borderRadius:14, padding:"12px 14px", border:`1px solid ${T.border}` }}>
             <div style={{ fontFamily:"'Clash Display',sans-serif", fontSize:16, fontWeight:700, color }}>{val}</div>
-            <div style={{ fontSize:11, color:T.muted, marginTop:2 }}>{label}</div>
+            <div style={{ fontSize:11, color:T.muted, marginTop:3 }}>{label}</div>
           </div>
         ))}
       </div>
 
-      <div style={{ height:8, background:T.border, borderRadius:99, marginBottom:18, overflow:"hidden" }}>
-        <div style={{ height:"100%", width:Math.min(pct,100)+"%", background:pct>85?T.danger:T.gold, borderRadius:99, transition:"width 0.4s" }} />
-      </div>
-
+      {/* Add form */}
       {adding && (
-        <div style={{ background:T.white, borderRadius:16, padding:16, marginBottom:12, border:`1px solid ${T.border}` }}>
-          <input placeholder="Item name *" value={nw.name} onChange={e=>setNw({...nw,name:e.target.value})} autoFocus
-            style={{ width:"100%", border:"none", borderBottom:`1px solid ${T.border}`, outline:"none", fontSize:15, marginBottom:10, background:"transparent", paddingBottom:6 }} />
-          <div style={{ display:"flex", gap:8, marginBottom:10 }}>
-            <input placeholder="Budget ₹" value={nw.budget} onChange={e=>setNw({...nw,budget:e.target.value})} type="number"
-              style={{ flex:1, padding:"8px", borderRadius:8, border:`1px solid ${T.border}`, fontSize:13 }} />
-            <input placeholder="Spent ₹" value={nw.spent} onChange={e=>setNw({...nw,spent:e.target.value})} type="number"
-              style={{ flex:1, padding:"8px", borderRadius:8, border:`1px solid ${T.border}`, fontSize:13 }} />
+        <div style={{ background:T.white, borderRadius:16, padding:16, marginBottom:14, border:`2px solid ${T.gold}` }}>
+          <div style={{ fontFamily:"'Clash Display',sans-serif", fontSize:15, fontWeight:700, marginBottom:12, color:T.navy }}>New Budget Item</div>
+          <input
+            placeholder="Item name (e.g. Catering, DJ, Makeup) *"
+            value={nw.name}
+            onChange={e => setNw({...nw, name:e.target.value})}
+            autoFocus
+            style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1px solid ${T.border}`, fontSize:14, outline:"none", marginBottom:10 }}
+          />
+          <select value={nw.cat} onChange={e => setNw({...nw, cat:e.target.value})}
+            style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1px solid ${T.border}`, fontSize:14, outline:"none", marginBottom:10 }}>
+            {CATS.map(c => <option key={c}>{c}</option>)}
+          </select>
+          <div style={{ display:"flex", gap:10, marginBottom:12 }}>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:12, color:T.muted, marginBottom:4 }}>Budgeted Amount (₹)</div>
+              <input
+                placeholder="e.g. 500000"
+                value={nw.budget}
+                onChange={e => setNw({...nw, budget:e.target.value})}
+                type="number"
+                style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1px solid ${T.border}`, fontSize:14, outline:"none" }}
+              />
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:12, color:T.muted, marginBottom:4 }}>Amount Spent (₹)</div>
+              <input
+                placeholder="e.g. 100000"
+                value={nw.spent}
+                onChange={e => setNw({...nw, spent:e.target.value})}
+                type="number"
+                style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1px solid ${T.border}`, fontSize:14, outline:"none" }}
+              />
+            </div>
           </div>
           <div style={{ display:"flex", gap:8 }}>
-            <button onClick={()=>{ if(!nw.name)return; setBudget(b=>({...b,items:[...b.items,{...nw,id:Date.now(),budget:Number(nw.budget)||0,spent:Number(nw.spent)||0}]})); setNw({cat:"Misc",name:"",budget:"",spent:""}); setAdding(false); }}
-              style={{ flex:1, padding:10, background:T.navy, color:T.white, border:"none", borderRadius:10, cursor:"pointer", fontWeight:600 }}>Add</button>
-            <button onClick={()=>setAdding(false)} style={{ flex:1, padding:10, background:T.cream, color:T.muted, border:`1px solid ${T.border}`, borderRadius:10, cursor:"pointer" }}>Cancel</button>
+            <button onClick={addItem} style={{ flex:1, padding:12, background:T.navy, color:T.white, border:"none", borderRadius:12, cursor:"pointer", fontWeight:700, fontSize:14 }}>Save Item</button>
+            <button onClick={() => { setAdding(false); setNw({name:"",cat:"Misc",budget:"",spent:""}); }}
+              style={{ flex:1, padding:12, background:T.cream, color:T.muted, border:`1px solid ${T.border}`, borderRadius:12, cursor:"pointer" }}>Cancel</button>
           </div>
         </div>
       )}
 
-      {budget.items.map(item=>{
-        const ip = item.budget>0?Math.round((item.spent/item.budget)*100):0;
+      {/* Item list */}
+      {items.map(item => {
+        const b = Number(item.budget) || 0;
+        const s = Number(item.spent)  || 0;
+        const ip = b > 0 ? Math.min(100, Math.round((s / b) * 100)) : 0;
+        const isEditing = editingId === item.id;
+
         return (
-          <div key={item.id} style={{ background:T.white, borderRadius:14, padding:"14px 16px", marginBottom:8, border:`1px solid ${T.border}` }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
-              <div style={{ flex:1 }}>
-                {/* Inline editable name */}
-                <IE value={item.name} onChange={v=>upd(item.id,"name",v)} style={{ fontSize:14, fontWeight:600, color:T.charcoal }} />
-                <IE value={item.cat} onChange={v=>upd(item.id,"cat",v)} style={{ fontSize:11, color:T.muted, marginTop:2 }} />
+          <div key={item.id} style={{ background:T.white, borderRadius:16, marginBottom:10, border:`1px solid ${T.border}`, overflow:"hidden" }}>
+
+            {/* View mode */}
+            {!isEditing && (
+              <div style={{ padding:"14px 16px" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
+                  <div>
+                    <div style={{ fontSize:15, fontWeight:700, color:T.charcoal }}>{item.name}</div>
+                    <div style={{ fontSize:12, color:T.muted, marginTop:2 }}>{item.cat}</div>
+                  </div>
+                  <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+                    <button onClick={() => openEdit(item)} style={{ fontSize:12, padding:"5px 12px", borderRadius:8, border:`1px solid ${T.border}`, background:T.cream, color:T.navy, cursor:"pointer", fontWeight:600 }}>Edit</button>
+                    <div onClick={() => del(item.id)} style={{ color:T.rose, cursor:"pointer", fontSize:22, lineHeight:1 }}>×</div>
+                  </div>
+                </div>
+                <div style={{ display:"flex", gap:16, marginBottom:10 }}>
+                  <div>
+                    <div style={{ fontSize:11, color:T.muted }}>Budgeted</div>
+                    <div style={{ fontSize:15, fontWeight:700, color:T.charcoal }}>{fmt(b)}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:11, color:T.muted }}>Spent</div>
+                    <div style={{ fontSize:15, fontWeight:700, color:s>b?T.danger:T.success }}>{fmt(s)}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:11, color:T.muted }}>Left</div>
+                    <div style={{ fontSize:15, fontWeight:700, color:T.navyMid }}>{fmt(b-s)}</div>
+                  </div>
+                </div>
+                <div style={{ height:5, background:T.border, borderRadius:99, overflow:"hidden" }}>
+                  <div style={{ height:"100%", width:ip+"%", background:ip>=100?T.danger:ip>75?T.warn:T.success, borderRadius:99 }} />
+                </div>
+                <div style={{ fontSize:11, color:T.muted, marginTop:4 }}>{ip}% spent</div>
               </div>
-              <div onClick={()=>del(item.id)} style={{ color:T.rose, cursor:"pointer", fontSize:20, paddingLeft:12 }}>×</div>
-            </div>
-            <div style={{ display:"flex", gap:12, marginBottom:8 }}>
-              <div style={{ flex:1 }}>
-                <div style={{ fontSize:11, color:T.muted, marginBottom:3 }}>Budget</div>
-                <BudgetInput value={item.budget} onCommit={v=>upd(item.id,"budget",v)}
-                  style={{ width:"100%", border:"none", borderBottom:`1px solid ${T.border}`, outline:"none", fontSize:14, fontWeight:600, background:"transparent", color:T.charcoal, padding:"2px 0" }} />
+            )}
+
+            {/* Edit mode */}
+            {isEditing && (
+              <div style={{ padding:"14px 16px", background:"#FFFBF5", borderTop:`3px solid ${T.gold}` }}>
+                <div style={{ fontFamily:"'Clash Display',sans-serif", fontSize:14, fontWeight:700, color:T.navy, marginBottom:10 }}>Editing: {item.name}</div>
+                <input
+                  placeholder="Item name"
+                  value={editForm.name}
+                  onChange={e => setEditForm({...editForm, name:e.target.value})}
+                  style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1px solid ${T.border}`, fontSize:14, outline:"none", marginBottom:8 }}
+                />
+                <select value={editForm.cat} onChange={e => setEditForm({...editForm, cat:e.target.value})}
+                  style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1px solid ${T.border}`, fontSize:14, outline:"none", marginBottom:8 }}>
+                  {CATS.map(c => <option key={c}>{c}</option>)}
+                </select>
+                <div style={{ display:"flex", gap:10, marginBottom:12 }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:12, color:T.muted, marginBottom:4 }}>Budgeted (₹)</div>
+                    <input
+                      value={editForm.budget}
+                      onChange={e => setEditForm({...editForm, budget:e.target.value})}
+                      type="number"
+                      style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1px solid ${T.border}`, fontSize:14, outline:"none" }}
+                    />
+                  </div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:12, color:T.muted, marginBottom:4 }}>Spent (₹)</div>
+                    <input
+                      value={editForm.spent}
+                      onChange={e => setEditForm({...editForm, spent:e.target.value})}
+                      type="number"
+                      style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:`1px solid ${T.border}`, fontSize:14, outline:"none" }}
+                    />
+                  </div>
+                </div>
+                <div style={{ display:"flex", gap:8 }}>
+                  <button onClick={() => saveEdit(item.id)} style={{ flex:1, padding:12, background:T.navy, color:T.white, border:"none", borderRadius:12, cursor:"pointer", fontWeight:700, fontSize:14 }}>Save</button>
+                  <button onClick={() => setEditingId(null)} style={{ flex:1, padding:12, background:T.cream, color:T.muted, border:`1px solid ${T.border}`, borderRadius:12, cursor:"pointer" }}>Cancel</button>
+                </div>
               </div>
-              <div style={{ flex:1 }}>
-                <div style={{ fontSize:11, color:T.muted, marginBottom:3 }}>Spent</div>
-                <BudgetInput value={item.spent} onCommit={v=>upd(item.id,"spent",v)}
-                  style={{ width:"100%", border:"none", borderBottom:`1px solid ${T.border}`, outline:"none", fontSize:14, fontWeight:600, background:"transparent", color:ip>100?T.danger:T.charcoal, padding:"2px 0" }} />
-              </div>
-            </div>
-            <div style={{ height:4, background:T.border, borderRadius:99, overflow:"hidden" }}>
-              <div style={{ height:"100%", width:Math.min(ip,100)+"%", background:ip>100?T.danger:ip>75?T.warn:T.success, borderRadius:99 }} />
-            </div>
-            <div style={{ fontSize:11, color:T.muted, marginTop:4 }}>{ip}% used · {fmt(item.budget-item.spent)} left</div>
+            )}
           </div>
         );
       })}
+
+      {items.length === 0 && !adding && (
+        <div style={{ textAlign:"center", color:T.muted, padding:"40px 0", fontSize:14 }}>
+          No items yet. Tap <b>+ Add</b> to start tracking your budget.
+        </div>
+      )}
     </div>
   );
 }
