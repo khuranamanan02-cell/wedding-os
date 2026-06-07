@@ -164,7 +164,7 @@ function Home({ tasks, budget, vendors, guests }) {
   useEffect(() => { if (seconds !== prevSec.current) { setSecKey(k=>k+1); prevSec.current = seconds; } }, [seconds]);
 
   const tasksDone  = tasks.filter(t=>t.done).length;
-  const totalSpent = budget.items.reduce((s,i)=>s+i.spent,0);
+  const totalSpent = budget.items.reduce((s,i)=>s+(parseFloat(i.spent)||0),0);
   const vendorConf = vendors.filter(v=>v.status==="confirmed").length;
 
   const SCHEDULE = [
@@ -390,9 +390,15 @@ function Tasks({ tasks, setTasks }) {
 function Budget({ budget, setBudget }) {
   const [adding, setAdding] = useState(false);
   const [nw, setNw] = useState({ cat:"Misc", name:"", budget:"", spent:"" });
-  const totalSpent = budget.items.reduce((s,i)=>s+i.spent,0);
+  const totalSpent = budget.items.reduce((s,i)=>s+(parseFloat(i.spent)||0),0);
   const pct = Math.round((totalSpent/budget.total)*100);
-  const upd = (id,field,val) => setBudget(b=>({...b,items:b.items.map(i=>i.id===id?{...i,[field]:field==="name"||field==="cat"?val:Number(val)||0}:i)}));
+  const upd = (id,field,val) => setBudget(b=>({
+    ...b,
+    items: b.items.map(i => i.id===id ? {
+      ...i,
+      [field]: (field==="name"||field==="cat") ? val : (parseFloat(val)||0)
+    } : i)
+  }));
   const del = id => setBudget(b=>({...b,items:b.items.filter(i=>i.id!==id)}));
 
   return (
@@ -804,4 +810,3 @@ export default function App() {
     </>
   );
 }
-
