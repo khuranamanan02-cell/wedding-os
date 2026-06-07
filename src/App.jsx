@@ -61,6 +61,22 @@ function IE({ value, onChange, placeholder = "Tap to edit…", style = {}, multi
   return multiline ? <textarea rows={2} {...props} style={{ ...props.style, resize: "none" }} /> : <input {...props} />;
 }
 
+// ─── BUDGET INPUT — commits on blur so totals update correctly ───────────────
+function BudgetInput({ value, onCommit, style }) {
+  const [val, setVal] = useState(String(value));
+  useEffect(() => { setVal(String(value)); }, [value]);
+  return (
+    <input
+      type="number"
+      value={val}
+      onChange={e => setVal(e.target.value)}
+      onBlur={() => onCommit(Number(val) || 0)}
+      onKeyDown={e => { if (e.key === "Enter") e.target.blur(); }}
+      style={style}
+    />
+  );
+}
+
 // ─── LOCAL STORAGE HOOK ───────────────────────────────────────────────────────
 function useLS(key, init) {
   const [v, setV] = useState(() => {
@@ -433,12 +449,12 @@ function Budget({ budget, setBudget }) {
             <div style={{ display:"flex", gap:12, marginBottom:8 }}>
               <div style={{ flex:1 }}>
                 <div style={{ fontSize:11, color:T.muted, marginBottom:3 }}>Budget</div>
-                <input value={item.budget} onChange={e=>upd(item.id,"budget",e.target.value)} type="number"
+                <BudgetInput value={item.budget} onCommit={v=>upd(item.id,"budget",v)}
                   style={{ width:"100%", border:"none", borderBottom:`1px solid ${T.border}`, outline:"none", fontSize:14, fontWeight:600, background:"transparent", color:T.charcoal, padding:"2px 0" }} />
               </div>
               <div style={{ flex:1 }}>
                 <div style={{ fontSize:11, color:T.muted, marginBottom:3 }}>Spent</div>
-                <input value={item.spent} onChange={e=>upd(item.id,"spent",e.target.value)} type="number"
+                <BudgetInput value={item.spent} onCommit={v=>upd(item.id,"spent",v)}
                   style={{ width:"100%", border:"none", borderBottom:`1px solid ${T.border}`, outline:"none", fontSize:14, fontWeight:600, background:"transparent", color:ip>100?T.danger:T.charcoal, padding:"2px 0" }} />
               </div>
             </div>
