@@ -24,8 +24,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/"    element={<GuestSite />} />
-      <Route path="/os"  element={<OSRoute />} />
-      <Route path="/os/*" element={<OSRoute />} />
+      {/* <Route path="/os"  element={<OSRoute />} /> */}
+      {/* <Route path="/os/*" element={<OSRoute />} /> */}
       <Route path="*"    element={<Navigate to="/" replace />} />
     </Routes>
   );
