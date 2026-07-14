@@ -16,9 +16,6 @@ const PHOTO_NEW2   = "https://res.cloudinary.com/dmmstltmq/image/upload/f_auto,q
 // REPLACE each REPLACE_scrap_XX with your Cloudinary public ID after uploading
 // SCRAP_01 → ISB nameplate classroom     SCRAP_02 → ISB nameplate classroom 2
 // SCRAP_03 → graduation robes            SCRAP_04 → red dress ISB garden
-// SCRAP_05 → Akya event ethnic wear      SCRAP_06 → ISB building formal
-// SCRAP_07 → beach hut sunglasses        SCRAP_08 → outdoor night pink dress
-// SCRAP_09 → Dubai selfie black jackets
 const SCRAP_01 = "https://res.cloudinary.com/dmmstltmq/image/upload/v1784060819/WhatsApp_Image_2026-07-15_at_1.02.02_AM_h2szzl.jpg";
 const SCRAP_02 = "https://res.cloudinary.com/dmmstltmq/image/upload/v1784060819/WhatsApp_Image_2026-07-15_at_12.57.15_AM_e0m0cl.jpg";
 const SCRAP_03 = "https://res.cloudinary.com/dmmstltmq/image/upload/v1784060820/WhatsApp_Image_2026-07-15_at_12.58.25_AM_obwcik.jpg";
@@ -702,18 +699,14 @@ function Venue() {
 
 // ─── SCRAPBOOK ────────────────────────────────────────────────────────────────
 const PHOTOS = [
-  {src:SCRAP_04,caption:"the night it all changed",rotate:-3.5},
+  {src:SCRAP_03,caption:"the night it all changed",rotate:-3.5},
   {src:PHOTO_FORMAL,caption:"Roka, February 2026",rotate:2.2},
-  {src:SCRAP_01,caption:"where it began — ISB",rotate:-1.8},
-  {src:SCRAP_09,caption:"home in Dubai",rotate:3.1},
-  {src:SCRAP_08,caption:"an evening to remember",rotate:-2.5},
+  {src:SCRAP_04,caption:"where it began — ISB",rotate:-1.8},
+  {src:SCRAP_01,caption:"an evening to remember",rotate:2.5},
   {src:PHOTO_FUN,caption:"the photoshoot laugh",rotate:1.5},
-  {src:SCRAP_07,caption:"somewhere by the sea",rotate:-4.0},
+  {src:SCRAP_02,caption:"somewhere beautiful",rotate:-4.0},
   {src:SCRAP_05,caption:"celebrating together",rotate:2.8},
-  {src:SCRAP_03,caption:"graduation day",rotate:-1.2},
   {src:PHOTO_NEW1,caption:"all dressed up",rotate:3.5},
-  {src:SCRAP_06,caption:"the ISB years",rotate:-2.0},
-  {src:SCRAP_02,caption:"side by side, always",rotate:1.8},
 ];
 
 function Scrapbook() {
