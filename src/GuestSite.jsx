@@ -77,9 +77,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text'
 @keyframes navFadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes cursorFade{0%{opacity:0.8;transform:scale(1)}100%{opacity:0;transform:scale(0)}}
 @keyframes petalDrift{0%{transform:translateY(0) rotate(0deg);opacity:0}15%{opacity:0.5}85%{opacity:0.2}100%{transform:translateY(-200px) translateX(40px) rotate(180deg);opacity:0}}
-@keyframes envPulse{0%,100%{transform:scale(1);opacity:0.7}50%{transform:scale(1.12);opacity:1}}
-@keyframes envFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-@keyframes goldSheen{0%{opacity:0.3}50%{opacity:0.7}100%{opacity:0.3}}
+@keyframes envPulse{0%,100%{transform:scale(1);opacity:0.8}50%{transform:scale(1.08);opacity:1}}
+@keyframes envFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes goldSheen{0%,100%{opacity:0}40%{opacity:0.6}60%{opacity:0.6}}
+@keyframes sheenSlide{0%{transform:translateX(-100%) skewX(-15deg)}100%{transform:translateX(300%) skewX(-15deg)}}
+@keyframes cardRise{0%{opacity:0;transform:translateY(120px) scale(0.96)}100%{opacity:1;transform:translateY(-140px) scale(1)}}
+@keyframes bgReveal{from{opacity:0}to{opacity:1}}
+@keyframes sealGlow{0%,100%{box-shadow:0 0 0 0 rgba(201,169,110,0)}50%{box-shadow:0 0 28px 8px rgba(201,169,110,0.25)}}
+@keyframes textReveal{0%{opacity:0;letter-spacing:8px}100%{opacity:1;letter-spacing:normal}}
+@keyframes borderTrace{from{stroke-dashoffset:1000}to{stroke-dashoffset:0}}
 .nav-logo{white-space:nowrap;}
 
 .gold-shimmer{background:linear-gradient(90deg,#8B6914 0%,#C9A96E 25%,#F5E4B0 50%,#C9A96E 75%,#8B6914 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 5s linear infinite;}
@@ -372,223 +378,372 @@ function MusicPlayer() {
 }
 
 // ─── WAX SEAL ─────────────────────────────────────────────────────────────────
-function WaxSeal({ size=80, cracking=false }) {
+// ─── WAX SEAL (rich gold, large) ──────────────────────────────────────────────
+function WaxSeal({ size=100, cracking=false }) {
   return (
-    <div style={{width:size,height:size,display:"inline-block",animation:cracking?"sealCrack 1s ease forwards":"waxWobble 4s ease-in-out infinite"}}>
-      <svg width={size} height={size} viewBox="0 0 80 80">
+    <div style={{
+      width:size, height:size, display:"inline-block",
+      animation: cracking ? "sealCrack 1s ease forwards" : "waxWobble 5s ease-in-out infinite",
+      filter:"drop-shadow(0 4px 18px rgba(201,169,110,0.45))",
+    }}>
+      <svg width={size} height={size} viewBox="0 0 100 100">
         <defs>
-          <radialGradient id="sg" cx="38%" cy="32%">
-            <stop offset="0%" stopColor="#F0D080"/>
-            <stop offset="40%" stopColor="#C9A96E"/>
-            <stop offset="100%" stopColor="#7A5E20"/>
+          <radialGradient id="sealMain" cx="35%" cy="28%">
+            <stop offset="0%"   stopColor="#FDE68A"/>
+            <stop offset="30%"  stopColor="#D4A843"/>
+            <stop offset="70%"  stopColor="#A0742A"/>
+            <stop offset="100%" stopColor="#5C3D0A"/>
           </radialGradient>
-          <radialGradient id="sgSheen" cx="30%" cy="25%">
-            <stop offset="0%" stopColor="#FFF8DC" stopOpacity="0.6"/>
+          <radialGradient id="sealSheen" cx="28%" cy="22%">
+            <stop offset="0%"   stopColor="#FFFDE7" stopOpacity="0.75"/>
+            <stop offset="60%"  stopColor="#FDE68A" stopOpacity="0.1"/>
             <stop offset="100%" stopColor="#C9A96E" stopOpacity="0"/>
           </radialGradient>
         </defs>
-        {/* Main seal circle */}
-        <circle cx="40" cy="40" r="36" fill="url(#sg)"/>
-        {/* Sheen highlight */}
-        <circle cx="40" cy="40" r="36" fill="url(#sgSheen)"/>
-        {/* Decorative outer ring */}
-        <circle cx="40" cy="40" r="33" fill="none" stroke="#F5E4B0" strokeWidth="0.6" opacity="0.5"/>
-        {/* Inner decorative ring */}
-        <circle cx="40" cy="40" r="27" fill="none" stroke="#F5E4B0" strokeWidth="0.4" opacity="0.4"/>
-        {/* 8-pointed star border detail */}
-        {[0,45,90,135,180,225,270,315].map(a=>(
-          <line key={a}
-            x1={40+25*Math.cos(a*Math.PI/180)} y1={40+25*Math.sin(a*Math.PI/180)}
-            x2={40+29*Math.cos(a*Math.PI/180)} y2={40+29*Math.sin(a*Math.PI/180)}
-            stroke="#F5E4B0" strokeWidth="0.8" opacity="0.5"/>
-        ))}
-        {/* Monogram M & S */}
-        <text x="40" y="44" textAnchor="middle" fontSize="16" fill="#3A2800"
-          fontFamily="'Cormorant Garamond',serif" fontStyle="italic" fontWeight="500"
-          letterSpacing="1">M &amp; S</text>
+        {/* Shadow base */}
+        <circle cx="50" cy="53" r="44" fill="rgba(0,0,0,0.25)"/>
+        {/* Main gold circle */}
+        <circle cx="50" cy="50" r="44" fill="url(#sealMain)"/>
+        {/* Specular sheen */}
+        <circle cx="50" cy="50" r="44" fill="url(#sealSheen)"/>
+        {/* Serrated outer edge — 24 teeth */}
+        {Array.from({length:24},(_,i)=>{
+          const a1=(i/24)*Math.PI*2; const a2=((i+0.5)/24)*Math.PI*2;
+          const r1=44, r2=40;
+          return <polygon key={i} points={`
+            ${50+r1*Math.cos(a1)},${50+r1*Math.sin(a1)}
+            ${50+r2*Math.cos(a2)},${50+r2*Math.sin(a2)}
+            ${50+r1*Math.cos(a1+Math.PI/24)},${50+r1*Math.sin(a1+Math.PI/24)}
+          `} fill="#B8860B" opacity="0.6"/>;
+        })}
+        {/* Decorative rings */}
+        <circle cx="50" cy="50" r="38" fill="none" stroke="#FDE68A" strokeWidth="0.7" opacity="0.55"/>
+        <circle cx="50" cy="50" r="32" fill="none" stroke="#FDE68A" strokeWidth="0.5" opacity="0.4"/>
+        <circle cx="50" cy="50" r="26" fill="none" stroke="#FDE68A" strokeWidth="0.4" opacity="0.35"/>
+        {/* 8-petal flower detail */}
+        {[0,45,90,135,180,225,270,315].map(a=>{
+          const rad=a*Math.PI/180;
+          return <ellipse key={a} cx={50+29*Math.cos(rad)} cy={50+29*Math.sin(rad)}
+            rx="3.5" ry="5.5" transform={`rotate(${a},${50+29*Math.cos(rad)},${50+29*Math.sin(rad)})`}
+            fill="#FDE68A" opacity="0.3"/>;
+        })}
+        {/* Monogram */}
+        <text x="50" y="54" textAnchor="middle" fontSize="18"
+          fill="#3A1F00" fontFamily="'Cormorant Garamond',serif"
+          fontStyle="italic" fontWeight="600" letterSpacing="1.5">M &amp; S</text>
       </svg>
     </div>
   );
 }
 
 // ─── OPENING ──────────────────────────────────────────────────────────────────
-function EnvelopeIcon() {
-  return (
-    <svg width="52" height="38" viewBox="0 0 52 38" fill="none" style={{animation:"envFloat 2.5s ease-in-out infinite"}}>
-      <rect x="1" y="1" width="50" height="36" rx="4" fill="#F5EDD8" stroke="#C9A96E" strokeWidth="1.2"/>
-      <path d="M1 5 L26 22 L51 5" stroke="#C9A96E" strokeWidth="1.2" fill="none"/>
-      <path d="M1 33 L18 18" stroke="#C9A96E" strokeWidth="0.7" opacity="0.5"/>
-      <path d="M51 33 L34 18" stroke="#C9A96E" strokeWidth="0.7" opacity="0.5"/>
-    </svg>
-  );
-}
-
 function OpeningSequence({ onComplete }) {
-  const [phase,setPhase]=useState("idle");
-  const [flapOpen,setFlapOpen]=useState(false);
+  const [phase,setPhase]=useState("idle");   // idle → seal → flap → card → done
+  const [flapAngle,setFlapAngle]=useState(0);
+  const [cardVisible,setCardVisible]=useState(false);
+
   const handle=useCallback(()=>{
     if(phase!=="idle") return;
+    // crack seal
     setPhase("seal");
-    setTimeout(()=>{setPhase("flap");setFlapOpen(true);},900);
-    setTimeout(()=>setPhase("card"),2200);
-    setTimeout(()=>{setPhase("done");onComplete();},3900);
+    // open flap
+    setTimeout(()=>{ setPhase("flap"); setFlapAngle(-175); },800);
+    // show card
+    setTimeout(()=>{ setPhase("card"); setCardVisible(true); },2000);
+    // fade out
+    setTimeout(()=>{ setPhase("done"); setTimeout(onComplete,900); },4200);
   },[phase,onComplete]);
 
-  // Ivory envelope dimensions
-  const EW=320, EH=200;
+  const done = phase==="done";
+
+  // Responsive envelope size
+  const EW = Math.min(340, typeof window!=="undefined" ? window.innerWidth*0.88 : 340);
+  const EH = Math.round(EW * 0.6);
 
   return (
     <div onClick={handle} style={{
       position:"fixed",inset:0,zIndex:9999,
-      background:"radial-gradient(ellipse at 50% 38%,#1C1508 0%,#080808 68%)",
       display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
       cursor:phase==="idle"?"pointer":"default",
-      opacity:phase==="done"?0:1,transition:"opacity 1s ease",
+      opacity:done?0:1,
+      transition:done?"opacity 0.9s ease":"none",
+      overflow:"hidden",
     }}>
-      <Particles count={8}/>
 
-      {/* "You have a letter" */}
-      {phase==="idle"&&(
-        <div style={{position:"absolute",top:"18%",textAlign:"center",animation:"fadeIn 1.8s ease both"}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",
-            fontSize:"clamp(16px,3.5vw,22px)",color:T.goldLight,opacity:0.7,
-            letterSpacing:2,fontWeight:300}}>
-            You have a letter
-          </div>
-        </div>
-      )}
+      {/* ── Rich layered background ── */}
+      <div style={{position:"absolute",inset:0,background:"#0D0A04"}}/>
+      {/* warm radial glow behind envelope */}
+      <div style={{position:"absolute",inset:0,
+        background:"radial-gradient(ellipse 70% 55% at 50% 58%, #2A1A04 0%, #0D0A04 65%)",
+        animation:"bgReveal 2.5s ease both"}}/>
+      {/* subtle vignette corners */}
+      <div style={{position:"absolute",inset:0,
+        background:"radial-gradient(ellipse 120% 100% at 50% 50%, transparent 40%, rgba(0,0,0,0.7) 100%)",
+        pointerEvents:"none"}}/>
 
-      {/* Envelope */}
-      <div style={{position:"relative",width:EW,height:EH+40,perspective:1400}}>
+      {/* floating gold particles */}
+      <Particles count={18}/>
 
-        {/* ── Envelope body (ivory) ── */}
+      {/* ── Top text ── */}
+      <div style={{
+        position:"absolute",top:"12%",textAlign:"center",
+        opacity: phase==="idle"?1:0, transition:"opacity 0.5s ease",
+        animation:"fadeUp 1.4s 0.6s ease both",
+      }}>
         <div style={{
-          position:"absolute",bottom:0,left:0,right:0,height:EH,
-          background:"linear-gradient(160deg,#FDFAF3 0%,#F0E8D0 60%,#E8DFC0 100%)",
-          borderRadius:"3px 3px 10px 10px",
-          boxShadow:"0 20px 70px rgba(0,0,0,0.85),0 4px 12px rgba(0,0,0,0.4)",
-          border:"1px solid #D4BC80",
-          overflow:"hidden",
+          fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",
+          fontSize:"clamp(14px,3.5vw,20px)",fontWeight:300,
+          color:T.goldLight,letterSpacing:3,opacity:0.75,
         }}>
-          {/* Subtle texture lines on body */}
-          <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",opacity:0.18}} viewBox={`0 0 ${EW} ${EH}`}>
-            {/* V-fold lines from bottom corners to center */}
-            <line x1="0" y1={EH} x2={EW/2} y2={EH*0.52} stroke="#8B6914" strokeWidth="0.6"/>
-            <line x1={EW} y1={EH} x2={EW/2} y2={EH*0.52} stroke="#8B6914" strokeWidth="0.6"/>
-            {/* side fold lines */}
-            <line x1="0" y1="0" x2="0" y2={EH} stroke="#8B6914" strokeWidth="0.4"/>
-            <line x1={EW} y1="0" x2={EW} y2={EH} stroke="#8B6914" strokeWidth="0.4"/>
-            {/* thin border inset */}
-            <rect x="6" y="6" width={EW-12} height={EH-12} rx="2" fill="none" stroke="#C9A96E" strokeWidth="0.5"/>
-          </svg>
-          {/* Names on envelope face */}
-          <div style={{position:"absolute",bottom:22,left:0,right:0,textAlign:"center"}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",
-              fontSize:20,fontWeight:400,color:"#5A3E0A",letterSpacing:2,opacity:0.75}}>
-              Manan &amp; Shrishti
-            </div>
-            <div style={{fontSize:8,letterSpacing:4,color:"#8B6914",marginTop:5,
-              textTransform:"uppercase",opacity:0.6}}>20 · 21 September 2026</div>
-          </div>
+          You have a letter
         </div>
+      </div>
 
-        {/* ── Flap (ivory, triangle) ── */}
-        <div style={{
-          position:"absolute",top:0,left:0,right:0,height:EH*0.6,
-          transformOrigin:"top center",transformStyle:"preserve-3d",
-          transition:"transform 1.4s cubic-bezier(0.4,0,0.2,1)",
-          transform:flapOpen?"rotateX(-172deg)":"rotateX(0deg)",
-          zIndex:5,
-        }}>
-          <svg width={EW} height={EH*0.6} viewBox={`0 0 ${EW} ${EH*0.6}`}>
-            <defs>
-              <linearGradient id="flapGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#FDFAF3"/>
-                <stop offset="100%" stopColor="#E8DFC0"/>
-              </linearGradient>
-            </defs>
-            <polygon points={`0,0 ${EW},0 ${EW/2},${EH*0.55}`}
-              fill="url(#flapGrad)" stroke="#D4BC80" strokeWidth="1"/>
-            {/* flap inner crease line */}
-            <line x1="0" y1="0" x2={EW/2} y2={EH*0.55} stroke="#C9A96E" strokeWidth="0.4" opacity="0.3"/>
-            <line x1={EW} y1="0" x2={EW/2} y2={EH*0.55} stroke="#C9A96E" strokeWidth="0.4" opacity="0.3"/>
-          </svg>
-        </div>
+      {/* ── Envelope + Card wrapper (perspective scene) ── */}
+      <div style={{position:"relative",width:EW,perspective:1600,perspectiveOrigin:"50% 60%",zIndex:2}}>
 
-        {/* ── Wax seal ── */}
-        <div style={{
-          position:"absolute",top:EH*0.6-40,left:"50%",transform:"translateX(-50%)",
-          zIndex:10,
-          opacity:flapOpen?0:1,transition:"opacity 0.25s ease 0.3s",
-        }}>
-          <WaxSeal size={80} cracking={phase==="seal"}/>
-        </div>
-
-        {/* ── Invitation card slides out ── */}
-        {(phase==="card"||phase==="done")&&(
+        {/* ── Invitation card (behind envelope, rises up) ── */}
+        {cardVisible && (
           <div style={{
-            position:"absolute",top:-110,left:20,right:20,
-            background:"linear-gradient(175deg,#FDFAF3,#F5EDD8)",
-            borderRadius:6,
-            padding:"28px 32px 24px",
+            position:"absolute",
+            bottom: EH * 0.25,
+            left: EW*0.04, right: EW*0.04,
+            minHeight: EH * 1.6,
+            background:"linear-gradient(170deg,#FDFAF3 0%,#F6EDDA 50%,#EEE0C0 100%)",
+            borderRadius: 6,
+            animation:"cardRise 1s cubic-bezier(0.16,1,0.3,1) both",
+            boxShadow:"0 -20px 80px rgba(0,0,0,0.8), 0 0 0 1px #C9A96E40",
+            zIndex:1,
+            display:"flex",flexDirection:"column",alignItems:"center",
+            justifyContent:"center",padding:"28px 24px 24px",
             textAlign:"center",
-            animation:"cardSlide 1s cubic-bezier(0.16,1,0.3,1) both",
-            boxShadow:"0 -16px 60px rgba(0,0,0,0.75)",
-            border:"1px solid #D4BC80",
+            overflow:"hidden",
           }}>
-            {/* gold filigree border */}
-            <svg style={{position:"absolute",inset:6,width:"calc(100% - 12px)",height:"calc(100% - 12px)",pointerEvents:"none"}} viewBox="0 0 276 140" preserveAspectRatio="none">
-              <rect x="1" y="1" width="274" height="138" rx="3" fill="none" stroke="#C9A96E" strokeWidth="0.6" opacity="0.5"/>
-              {/* corner flourishes */}
-              <path d="M1 12 Q1 1 12 1" fill="none" stroke="#C9A96E" strokeWidth="0.8" opacity="0.6"/>
-              <path d="M264 1 Q275 1 275 12" fill="none" stroke="#C9A96E" strokeWidth="0.8" opacity="0.6"/>
-              <path d="M1 128 Q1 139 12 139" fill="none" stroke="#C9A96E" strokeWidth="0.8" opacity="0.6"/>
-              <path d="M264 139 Q275 139 275 128" fill="none" stroke="#C9A96E" strokeWidth="0.8" opacity="0.6"/>
-              {/* center top diamond */}
-              <path d="M134 1 L138 6 L142 1 L138 -4Z" fill="#C9A96E" opacity="0.4"/>
+            {/* shimmer sweep */}
+            <div style={{
+              position:"absolute",inset:0,
+              background:"linear-gradient(105deg,transparent 30%,rgba(255,248,210,0.45) 50%,transparent 70%)",
+              animation:"sheenSlide 2.8s 0.6s ease both",
+              pointerEvents:"none",
+            }}/>
+
+            {/* SVG filigree border — elegant corner ornaments */}
+            <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}}
+              viewBox="0 0 280 200" preserveAspectRatio="none">
+              {/* outer frame */}
+              <rect x="8" y="8" width="264" height="184" rx="2"
+                fill="none" stroke="#C9A96E" strokeWidth="0.8" opacity="0.55"
+                strokeDasharray="1000" strokeDashoffset="0"/>
+              {/* inner frame */}
+              <rect x="14" y="14" width="252" height="172" rx="1"
+                fill="none" stroke="#C9A96E" strokeWidth="0.4" opacity="0.3"/>
+              {/* corner TL */}
+              <path d="M8 32 L8 8 L32 8" fill="none" stroke="#C9A96E" strokeWidth="1.2" opacity="0.7"/>
+              <circle cx="8" cy="8" r="3" fill="#C9A96E" opacity="0.5"/>
+              {/* corner TR */}
+              <path d="M248 8 L272 8 L272 32" fill="none" stroke="#C9A96E" strokeWidth="1.2" opacity="0.7"/>
+              <circle cx="272" cy="8" r="3" fill="#C9A96E" opacity="0.5"/>
+              {/* corner BL */}
+              <path d="M8 168 L8 192 L32 192" fill="none" stroke="#C9A96E" strokeWidth="1.2" opacity="0.7"/>
+              <circle cx="8" cy="192" r="3" fill="#C9A96E" opacity="0.5"/>
+              {/* corner BR */}
+              <path d="M248 192 L272 192 L272 168" fill="none" stroke="#C9A96E" strokeWidth="1.2" opacity="0.7"/>
+              <circle cx="272" cy="192" r="3" fill="#C9A96E" opacity="0.5"/>
+              {/* center top ornament */}
+              <path d="M126 8 L130 3 L134 8 L138 2 L142 8 L146 3 L150 8 L154 8" fill="none" stroke="#C9A96E" strokeWidth="0.7" opacity="0.5"/>
+              {/* center bottom ornament */}
+              <path d="M126 192 L130 197 L134 192 L138 198 L142 192 L146 197 L150 192 L154 192" fill="none" stroke="#C9A96E" strokeWidth="0.7" opacity="0.5"/>
             </svg>
 
-            <div style={{fontSize:8,letterSpacing:5,color:"#8B6914",textTransform:"uppercase",
-              marginBottom:14,fontFamily:"Inter,sans-serif"}}>
-              you are cordially invited
-            </div>
+            {/* ── Card content ── */}
+            <div style={{position:"relative",zIndex:1}}>
+              {/* Eyebrow */}
+              <div style={{
+                fontSize:8,letterSpacing:6,color:"#8B6914",textTransform:"uppercase",
+                marginBottom:18,fontFamily:"Inter,sans-serif",
+                animation:"fadeUp 0.8s 0.8s ease both",opacity:0,
+                animationFillMode:"forwards",
+              }}>
+                you are cordially invited
+              </div>
 
-            {/* Names — equal, same line */}
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:400,
-              color:"#3A2800",letterSpacing:1,lineHeight:1.1,marginBottom:12}}>
-              Manan &amp; Shrishti
-            </div>
+              {/* Mandala motif */}
+              <div style={{marginBottom:10,animation:"fadeIn 1s 0.9s ease both",opacity:0,animationFillMode:"forwards"}}>
+                <Mandala size={52} opacity={0.35}/>
+              </div>
 
-            {/* thin gold rule */}
-            <div style={{display:"flex",alignItems:"center",gap:10,margin:"0 auto 12px",maxWidth:180}}>
-              <div style={{flex:1,height:"0.5px",background:"#C9A96E",opacity:0.5}}/>
-              <div style={{fontSize:10,color:"#C9A96E",opacity:0.7}}>✦</div>
-              <div style={{flex:1,height:"0.5px",background:"#C9A96E",opacity:0.5}}/>
-            </div>
+              {/* Names */}
+              <div style={{
+                fontFamily:"'Cormorant Garamond',serif",fontWeight:400,
+                fontSize:"clamp(26px,7vw,38px)",color:"#2C1800",
+                letterSpacing:1,lineHeight:1.05,marginBottom:4,
+                animation:"fadeUp 0.9s 1s ease both",opacity:0,
+                animationFillMode:"forwards",
+              }}>
+                Manan &amp; Shrishti
+              </div>
 
-            <div style={{fontSize:10,letterSpacing:3,color:"#6B4F10",textTransform:"uppercase",
-              marginBottom:4,fontFamily:"Inter,sans-serif"}}>
-              20 · 21 September 2026
-            </div>
-            <div style={{fontSize:10,letterSpacing:2,color:"#8B6914",opacity:0.75,
-              fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic"}}>
-              Vivan Resort, Karnal
+              {/* gold rule */}
+              <div style={{
+                display:"flex",alignItems:"center",gap:12,
+                margin:"14px auto",maxWidth:200,
+                animation:"fadeIn 0.8s 1.2s ease both",opacity:0,
+                animationFillMode:"forwards",
+              }}>
+                <div style={{flex:1,height:1,background:"linear-gradient(to right,transparent,#C9A96E80)"}}/>
+                <svg width="12" height="12" viewBox="0 0 12 12">
+                  <path d="M6 0L7.2 4.8L12 6L7.2 7.2L6 12L4.8 7.2L0 6L4.8 4.8Z" fill="#C9A96E" opacity="0.8"/>
+                </svg>
+                <div style={{flex:1,height:1,background:"linear-gradient(to left,transparent,#C9A96E80)"}}/>
+              </div>
+
+              {/* Date */}
+              <div style={{
+                fontSize:10,letterSpacing:4,color:"#6B4A10",textTransform:"uppercase",
+                marginBottom:6,fontFamily:"Inter,sans-serif",
+                animation:"fadeUp 0.8s 1.3s ease both",opacity:0,
+                animationFillMode:"forwards",
+              }}>
+                20 · 21 September 2026
+              </div>
+
+              {/* Venue */}
+              <div style={{
+                fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",
+                fontSize:13,color:"#8B6914",letterSpacing:1,
+                animation:"fadeUp 0.8s 1.5s ease both",opacity:0,
+                animationFillMode:"forwards",
+              }}>
+                Vivan Resort, Karnal
+              </div>
             </div>
           </div>
         )}
-      </div>
 
-      {/* Tap prompt — pulsing envelope icon */}
-      {phase==="idle"&&(
-        <div style={{marginTop:48,textAlign:"center",animation:"fadeUp 1.5s 1s ease both",display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
-          <div style={{animation:"envPulse 2.2s ease-in-out infinite"}}>
-            <EnvelopeIcon/>
+        {/* ── Envelope body ── */}
+        <div style={{
+          position:"relative",width:EW,height:EH,
+          zIndex:3,
+          borderRadius:"2px 2px 8px 8px",
+          overflow:"hidden",
+          boxShadow:"0 30px 100px rgba(0,0,0,0.9),0 8px 24px rgba(0,0,0,0.5)",
+        }}>
+          {/* Back face (inside of envelope — warm cream) */}
+          <div style={{
+            position:"absolute",inset:0,
+            background:"linear-gradient(180deg,#E8D9B0 0%,#F0E4C4 100%)",
+          }}/>
+
+          {/* Front face */}
+          <div style={{
+            position:"absolute",inset:0,
+            background:"linear-gradient(145deg,#FEFBF0 0%,#F5ECD5 45%,#EAD9B8 100%)",
+          }}>
+            {/* paper texture */}
+            <div style={{
+              position:"absolute",inset:0,
+              backgroundImage:"repeating-linear-gradient(0deg,rgba(180,140,60,0.04) 0px,rgba(180,140,60,0.04) 1px,transparent 1px,transparent 18px)",
+            }}/>
+            {/* diagonal seam lines (V-fold) */}
+            <svg style={{position:"absolute",inset:0,width:"100%",height:"100%"}} viewBox={`0 0 ${EW} ${EH}`}>
+              <line x1="0" y1={EH} x2={EW/2} y2={EH*0.5} stroke="#C9A96E" strokeWidth="0.6" opacity="0.2"/>
+              <line x1={EW} y1={EH} x2={EW/2} y2={EH*0.5} stroke="#C9A96E" strokeWidth="0.6" opacity="0.2"/>
+              <line x1="0" y1="0" x2={EW/2} y2={EH*0.5} stroke="#C9A96E" strokeWidth="0.5" opacity="0.15"/>
+              <line x1={EW} y1="0" x2={EW/2} y2={EH*0.5} stroke="#C9A96E" strokeWidth="0.5" opacity="0.15"/>
+              {/* inset border */}
+              <rect x="7" y="7" width={EW-14} height={EH-14} rx="1" fill="none" stroke="#C9A96E" strokeWidth="0.6" opacity="0.35"/>
+              {/* corner stamps */}
+              <circle cx="15" cy="15" r="4" fill="none" stroke="#C9A96E" strokeWidth="0.5" opacity="0.3"/>
+              <circle cx={EW-15} cy="15" r="4" fill="none" stroke="#C9A96E" strokeWidth="0.5" opacity="0.3"/>
+            </svg>
+            {/* Bottom address area */}
+            <div style={{
+              position:"absolute",bottom:16,left:0,right:0,textAlign:"center",
+            }}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",
+                fontSize:16,fontWeight:400,color:"#6B4A10",letterSpacing:2,opacity:0.65}}>
+                Manan &amp; Shrishti
+              </div>
+              <div style={{fontSize:7,letterSpacing:4,color:"#8B6914",marginTop:4,
+                textTransform:"uppercase",opacity:0.45,fontFamily:"Inter,sans-serif"}}>
+                September 2026 · Karnal
+              </div>
+            </div>
           </div>
-          <div style={{fontSize:9,letterSpacing:4,color:T.gray3,textTransform:"uppercase"}}>
+        </div>
+
+        {/* ── Envelope flap ── */}
+        <div style={{
+          position:"absolute",top:0,left:0,width:EW,
+          transformOrigin:"top center",
+          transformStyle:"preserve-3d",
+          transition:"transform 1.5s cubic-bezier(0.35,0,0.1,1)",
+          transform:`rotateX(${flapAngle}deg)`,
+          zIndex:4,
+        }}>
+          <svg width={EW} height={EH*0.62} viewBox={`0 0 ${EW} ${EH*0.62}`} style={{display:"block"}}>
+            <defs>
+              <linearGradient id="flapFront" x1="0%" y1="0%" x2="50%" y2="100%">
+                <stop offset="0%" stopColor="#FEFBF0"/>
+                <stop offset="100%" stopColor="#E8D5A8"/>
+              </linearGradient>
+              <linearGradient id="flapBack" x1="0%" y1="0%" x2="50%" y2="100%">
+                <stop offset="0%" stopColor="#D4B870"/>
+                <stop offset="100%" stopColor="#C0A050"/>
+              </linearGradient>
+            </defs>
+            {/* flap front */}
+            <polygon
+              points={`0,0 ${EW},0 ${EW/2},${EH*0.58}`}
+              fill="url(#flapFront)" stroke="#C9A96E" strokeWidth="0.6" opacity="0.9"/>
+            {/* subtle sheen on flap */}
+            <polygon
+              points={`0,0 ${EW*0.5},0 ${EW*0.35},${EH*0.3}`}
+              fill="rgba(255,255,230,0.12)"/>
+            {/* crease lines */}
+            <line x1="0" y1="0" x2={EW/2} y2={EH*0.58} stroke="#C9A96E" strokeWidth="0.5" opacity="0.2"/>
+            <line x1={EW} y1="0" x2={EW/2} y2={EH*0.58} stroke="#C9A96E" strokeWidth="0.5" opacity="0.2"/>
+          </svg>
+        </div>
+
+        {/* ── Wax seal ── sits on flap seam ── */}
+        <div style={{
+          position:"absolute",
+          top: EH * 0.55 - 50,
+          left:"50%",transform:"translateX(-50%)",
+          zIndex:6,
+          opacity:flapAngle < -30 ? 0 : 1,
+          transition:"opacity 0.3s ease",
+        }}>
+          <WaxSeal size={100} cracking={phase==="seal"}/>
+        </div>
+
+      </div>{/* end perspective wrapper */}
+
+      {/* ── Tap prompt ── */}
+      {phase==="idle" && (
+        <div style={{
+          marginTop:44,textAlign:"center",
+          animation:"fadeUp 1.4s 1.4s ease both",
+          display:"flex",flexDirection:"column",alignItems:"center",gap:14,
+        }}>
+          {/* animated envelope icon */}
+          <svg width="56" height="40" viewBox="0 0 56 40" fill="none"
+            style={{animation:"envPulse 2.4s ease-in-out infinite",filter:"drop-shadow(0 2px 10px rgba(201,169,110,0.4))"}}>
+            <rect x="1.5" y="1.5" width="53" height="37" rx="5"
+              fill="#F5EDD8" stroke="#C9A96E" strokeWidth="1.4"/>
+            <path d="M1.5 7 L28 25 L54.5 7" stroke="#C9A96E" strokeWidth="1.4" fill="none"/>
+            <line x1="1.5" y1="37.5" x2="20" y2="20" stroke="#C9A96E" strokeWidth="0.8" opacity="0.45"/>
+            <line x1="54.5" y1="37.5" x2="36" y2="20" stroke="#C9A96E" strokeWidth="0.8" opacity="0.45"/>
+            {/* seal dot */}
+            <circle cx="28" cy="19" r="3.5" fill="#C9A96E" opacity="0.6"/>
+          </svg>
+          <div style={{fontSize:9,letterSpacing:5,color:"#555",textTransform:"uppercase",fontFamily:"Inter,sans-serif"}}>
             tap to open
           </div>
         </div>
       )}
+
     </div>
   );
 }
