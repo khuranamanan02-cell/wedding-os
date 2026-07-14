@@ -345,12 +345,10 @@ function Nav() {
       transition:"all 0.4s ease",
       animation:"navFadeIn 1s 1s ease both",
     }}>
-      <div className="nav-logo" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:400,color:T.gold,fontStyle:"italic"}}>M & S</div>
-      <div style={{display:"flex",gap:32}}>
-        {["events","rsvp","gallery","venue"].map(id=>(
-          <a key={id} href={`#${id}`} className={`nav-link${active===id?" active":""}`}>{id}</a>
-        ))}
-      </div>
+      <div className="nav-logo" style={{display:"flex",alignItems:"center",gap:8}}>
+  <Mandala size={18} opacity={0.7}/>
+  <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,fontWeight:400,color:T.gold,fontStyle:"italic"}}>M & S</span>
+</div>
     </nav>
   );
 }
@@ -438,312 +436,234 @@ function WaxSeal({ size=100, cracking=false }) {
 
 // ─── OPENING ──────────────────────────────────────────────────────────────────
 function OpeningSequence({ onComplete }) {
-  const [phase,setPhase]=useState("idle");   // idle → seal → flap → card → done
-  const [flapAngle,setFlapAngle]=useState(0);
-  const [cardVisible,setCardVisible]=useState(false);
+  const [phase, setPhase] = useState("idle");
+  const [cracked, setCracked] = useState(false);
 
-  const handle=useCallback(()=>{
-    if(phase!=="idle") return;
-    // crack seal
-    setPhase("seal");
-    // open flap
-    setTimeout(()=>{ setPhase("flap"); setFlapAngle(-175); },800);
-    // show card
-    setTimeout(()=>{ setPhase("card"); setCardVisible(true); },2000);
-    // fade out
-    setTimeout(()=>{ setPhase("done"); setTimeout(onComplete,900); },4200);
-  },[phase,onComplete]);
-
-  const done = phase==="done";
-
-  // Responsive envelope size
-  const EW = Math.min(340, typeof window!=="undefined" ? window.innerWidth*0.88 : 340);
-  const EH = Math.round(EW * 0.6);
+  const handle = useCallback(() => {
+    if (phase !== "idle") return;
+    setCracked(true);
+    setPhase("cracking");
+    setTimeout(() => setPhase("reveal"), 1200);
+    setTimeout(() => { setPhase("done"); setTimeout(onComplete, 800); }, 3200);
+  }, [phase, onComplete]);
 
   return (
     <div onClick={handle} style={{
-      position:"fixed",inset:0,zIndex:9999,
-      display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-      cursor:phase==="idle"?"pointer":"default",
-      opacity:done?0:1,
-      transition:done?"opacity 0.9s ease":"none",
+      position:"fixed", inset:0, zIndex:9999,
+      display:"flex", flexDirection:"column",
+      alignItems:"center", justifyContent:"center",
+      cursor: phase === "idle" ? "pointer" : "default",
+      opacity: phase === "done" ? 0 : 1,
+      transition: phase === "done" ? "opacity 0.8s ease" : "none",
       overflow:"hidden",
     }}>
-
-      {/* ── Rich layered background ── */}
-      <div style={{position:"absolute",inset:0,background:"#0D0A04"}}/>
-      {/* warm radial glow behind envelope */}
-      <div style={{position:"absolute",inset:0,
-        background:"radial-gradient(ellipse 70% 55% at 50% 58%, #2A1A04 0%, #0D0A04 65%)",
-        animation:"bgReveal 2.5s ease both"}}/>
-      {/* subtle vignette corners */}
-      <div style={{position:"absolute",inset:0,
-        background:"radial-gradient(ellipse 120% 100% at 50% 50%, transparent 40%, rgba(0,0,0,0.7) 100%)",
-        pointerEvents:"none"}}/>
-
-      {/* floating gold particles */}
-      <Particles count={18}/>
-
-      {/* ── Top text ── */}
+      {/* Background: hero photo blurred */}
       <div style={{
-        position:"absolute",top:"12%",textAlign:"center",
-        opacity: phase==="idle"?1:0, transition:"opacity 0.5s ease",
-        animation:"fadeUp 1.4s 0.6s ease both",
-      }}>
+        position:"absolute", inset:0,
+        backgroundImage:`url(${PHOTO_HERO})`,
+        backgroundSize:"cover", backgroundPosition:"center top",
+        filter:"blur(18px) brightness(0.28) saturate(0.6)",
+        transform:"scale(1.08)",
+      }}/>
+      {/* deep overlay */}
+      <div style={{
+        position:"absolute", inset:0,
+        background:"radial-gradient(ellipse 80% 70% at 50% 45%, rgba(20,12,4,0.55) 0%, rgba(4,3,2,0.88) 100%)",
+      }}/>
+
+      <Particles count={20}/>
+
+      {/* ── IDLE STATE ── */}
+      {phase === "idle" && (
         <div style={{
-          fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",
-          fontSize:"clamp(14px,3.5vw,20px)",fontWeight:300,
-          color:T.goldLight,letterSpacing:3,opacity:0.75,
+          position:"relative", zIndex:2,
+          display:"flex", flexDirection:"column",
+          alignItems:"center", textAlign:"center",
+          animation:"fadeIn 1.8s ease both",
         }}>
-          You have a letter
-        </div>
-      </div>
-
-      {/* ── Envelope + Card wrapper (perspective scene) ── */}
-      <div style={{position:"relative",width:EW,perspective:1600,perspectiveOrigin:"50% 60%",zIndex:2}}>
-
-        {/* ── Invitation card (behind envelope, rises up) ── */}
-        {cardVisible && (
+          {/* Wax seal — large, centered, glowing */}
           <div style={{
-            position:"absolute",
-            bottom: EH * 0.25,
-            left: EW*0.04, right: EW*0.04,
-            minHeight: EH * 1.6,
-            background:"linear-gradient(170deg,#FDFAF3 0%,#F6EDDA 50%,#EEE0C0 100%)",
-            borderRadius: 6,
-            animation:"cardRise 1s cubic-bezier(0.16,1,0.3,1) both",
-            boxShadow:"0 -20px 80px rgba(0,0,0,0.8), 0 0 0 1px #C9A96E40",
-            zIndex:1,
-            display:"flex",flexDirection:"column",alignItems:"center",
-            justifyContent:"center",padding:"28px 24px 24px",
-            textAlign:"center",
-            overflow:"hidden",
+            marginBottom:40,
+            animation:"waxWobble 5s ease-in-out infinite",
+            filter:"drop-shadow(0 0 32px rgba(201,169,110,0.5)) drop-shadow(0 0 8px rgba(201,169,110,0.3))",
+          }}>
+            <WaxSeal size={130} cracking={false}/>
+          </div>
+
+          {/* Names */}
+          <div style={{
+            fontFamily:"'Cormorant Garamond',serif",
+            fontSize:"clamp(28px,7vw,52px)",
+            fontWeight:400, fontStyle:"italic",
+            color:T.white, letterSpacing:3,
+            marginBottom:12,
+            textShadow:"0 2px 30px rgba(201,169,110,0.3)",
+          }}>
+            Manan &amp; Shrishti
+          </div>
+
+          <div style={{
+            display:"flex", alignItems:"center",
+            gap:14, margin:"0 auto 28px", maxWidth:260,
+          }}>
+            <div style={{flex:1,height:1,background:"linear-gradient(to right,transparent,#C9A96E60)"}}/>
+            <div style={{fontSize:10,color:T.gold}}>✦</div>
+            <div style={{flex:1,height:1,background:"linear-gradient(to left,transparent,#C9A96E60)"}}/>
+          </div>
+
+          <div style={{
+            fontSize:9, letterSpacing:5, color:T.gray2,
+            textTransform:"uppercase", marginBottom:52,
+            fontFamily:"Inter,sans-serif",
+          }}>
+            20 · 21 September 2026 · Karnal
+          </div>
+
+          {/* Tap prompt */}
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
+            <div style={{
+              width:1, height:36,
+              background:"linear-gradient(to bottom,transparent,#C9A96E60)",
+              animation:"floatY 2.5s ease-in-out infinite",
+            }}/>
+            <div style={{fontSize:8,letterSpacing:5,color:T.gray3,textTransform:"uppercase"}}>
+              tap to open
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── CRACKING STATE ── */}
+      {phase === "cracking" && (
+        <div style={{
+          position:"relative", zIndex:2,
+          display:"flex", flexDirection:"column",
+          alignItems:"center", textAlign:"center",
+        }}>
+          <div style={{
+            animation:"sealCrack 1.2s ease forwards",
+            filter:"drop-shadow(0 0 40px rgba(201,169,110,0.7))",
+          }}>
+            <WaxSeal size={130} cracking={true}/>
+          </div>
+        </div>
+      )}
+
+      {/* ── REVEAL STATE — full invitation card ── */}
+      {(phase === "reveal" || phase === "done") && (
+        <div style={{
+          position:"relative", zIndex:2,
+          display:"flex", flexDirection:"column",
+          alignItems:"center", textAlign:"center",
+          animation:"scaleIn 0.9s cubic-bezier(0.16,1,0.3,1) both",
+          padding:"0 24px",
+          maxWidth:440, width:"100%",
+        }}>
+          {/* card */}
+          <div style={{
+            background:"linear-gradient(160deg,#111008 0%,#0D0B05 100%)",
+            border:"1px solid #C9A96E50",
+            borderRadius:12,
+            padding:"44px 36px 40px",
+            width:"100%",
+            position:"relative",
+            boxShadow:"0 0 0 1px #C9A96E20, 0 32px 80px rgba(0,0,0,0.9), inset 0 1px 0 rgba(201,169,110,0.15)",
           }}>
             {/* shimmer sweep */}
             <div style={{
-              position:"absolute",inset:0,
-              background:"linear-gradient(105deg,transparent 30%,rgba(255,248,210,0.45) 50%,transparent 70%)",
-              animation:"sheenSlide 2.8s 0.6s ease both",
+              position:"absolute", inset:0, borderRadius:12, overflow:"hidden",
               pointerEvents:"none",
-            }}/>
+            }}>
+              <div style={{
+                position:"absolute", inset:0,
+                background:"linear-gradient(105deg,transparent 35%,rgba(201,169,110,0.08) 50%,transparent 65%)",
+                animation:"sheenSlide 2s 0.3s ease both",
+              }}/>
+            </div>
 
-            {/* SVG filigree border — elegant corner ornaments */}
-            <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}}
-              viewBox="0 0 280 200" preserveAspectRatio="none">
-              {/* outer frame */}
-              <rect x="8" y="8" width="264" height="184" rx="2"
-                fill="none" stroke="#C9A96E" strokeWidth="0.8" opacity="0.55"
-                strokeDasharray="1000" strokeDashoffset="0"/>
-              {/* inner frame */}
-              <rect x="14" y="14" width="252" height="172" rx="1"
-                fill="none" stroke="#C9A96E" strokeWidth="0.4" opacity="0.3"/>
-              {/* corner TL */}
-              <path d="M8 32 L8 8 L32 8" fill="none" stroke="#C9A96E" strokeWidth="1.2" opacity="0.7"/>
-              <circle cx="8" cy="8" r="3" fill="#C9A96E" opacity="0.5"/>
-              {/* corner TR */}
-              <path d="M248 8 L272 8 L272 32" fill="none" stroke="#C9A96E" strokeWidth="1.2" opacity="0.7"/>
-              <circle cx="272" cy="8" r="3" fill="#C9A96E" opacity="0.5"/>
-              {/* corner BL */}
-              <path d="M8 168 L8 192 L32 192" fill="none" stroke="#C9A96E" strokeWidth="1.2" opacity="0.7"/>
-              <circle cx="8" cy="192" r="3" fill="#C9A96E" opacity="0.5"/>
-              {/* corner BR */}
-              <path d="M248 192 L272 192 L272 168" fill="none" stroke="#C9A96E" strokeWidth="1.2" opacity="0.7"/>
-              <circle cx="272" cy="192" r="3" fill="#C9A96E" opacity="0.5"/>
-              {/* center top ornament */}
-              <path d="M126 8 L130 3 L134 8 L138 2 L142 8 L146 3 L150 8 L154 8" fill="none" stroke="#C9A96E" strokeWidth="0.7" opacity="0.5"/>
-              {/* center bottom ornament */}
-              <path d="M126 192 L130 197 L134 192 L138 198 L142 192 L146 197 L150 192 L154 192" fill="none" stroke="#C9A96E" strokeWidth="0.7" opacity="0.5"/>
+            {/* SVG filigree corners */}
+            <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",borderRadius:12}}
+              viewBox="0 0 360 240" preserveAspectRatio="none">
+              <path d="M20 8 L8 8 L8 20" fill="none" stroke="#C9A96E" strokeWidth="1" opacity="0.5"/>
+              <path d="M340 8 L352 8 L352 20" fill="none" stroke="#C9A96E" strokeWidth="1" opacity="0.5"/>
+              <path d="M20 232 L8 232 L8 220" fill="none" stroke="#C9A96E" strokeWidth="1" opacity="0.5"/>
+              <path d="M340 232 L352 232 L352 220" fill="none" stroke="#C9A96E" strokeWidth="1" opacity="0.5"/>
+              <circle cx="8" cy="8" r="2.5" fill="#C9A96E" opacity="0.4"/>
+              <circle cx="352" cy="8" r="2.5" fill="#C9A96E" opacity="0.4"/>
+              <circle cx="8" cy="232" r="2.5" fill="#C9A96E" opacity="0.4"/>
+              <circle cx="352" cy="232" r="2.5" fill="#C9A96E" opacity="0.4"/>
             </svg>
 
-            {/* ── Card content ── */}
+            {/* content */}
             <div style={{position:"relative",zIndex:1}}>
-              {/* Eyebrow */}
               <div style={{
-                fontSize:8,letterSpacing:6,color:"#8B6914",textTransform:"uppercase",
-                marginBottom:18,fontFamily:"Inter,sans-serif",
-                animation:"fadeUp 0.8s 0.8s ease both",opacity:0,
-                animationFillMode:"forwards",
+                fontSize:8,letterSpacing:6,color:T.gold,
+                textTransform:"uppercase",marginBottom:20,
+                fontFamily:"Inter,sans-serif",opacity:0.8,
+                animation:"fadeUp 0.7s 0.2s ease both",animationFillMode:"both",
               }}>
                 you are cordially invited
               </div>
 
-              {/* Mandala motif */}
-              <div style={{marginBottom:10,animation:"fadeIn 1s 0.9s ease both",opacity:0,animationFillMode:"forwards"}}>
-                <Mandala size={52} opacity={0.35}/>
+              <div style={{
+                marginBottom:16,
+                animation:"fadeIn 0.8s 0.3s ease both",animationFillMode:"both",
+              }}>
+                <Mandala size={48} opacity={0.5}/>
               </div>
 
-              {/* Names */}
               <div style={{
-                fontFamily:"'Cormorant Garamond',serif",fontWeight:400,
-                fontSize:"clamp(26px,7vw,38px)",color:"#2C1800",
-                letterSpacing:1,lineHeight:1.05,marginBottom:4,
-                animation:"fadeUp 0.9s 1s ease both",opacity:0,
-                animationFillMode:"forwards",
+                fontFamily:"'Cormorant Garamond',serif",
+                fontSize:"clamp(28px,7vw,42px)",
+                fontWeight:400,color:T.white,
+                letterSpacing:1,lineHeight:1.05,
+                marginBottom:6,
+                animation:"fadeUp 0.8s 0.4s ease both",animationFillMode:"both",
               }}>
                 Manan &amp; Shrishti
               </div>
 
-              {/* gold rule */}
               <div style={{
                 display:"flex",alignItems:"center",gap:12,
-                margin:"14px auto",maxWidth:200,
-                animation:"fadeIn 0.8s 1.2s ease both",opacity:0,
-                animationFillMode:"forwards",
+                margin:"16px auto",maxWidth:200,
+                animation:"fadeIn 0.7s 0.6s ease both",animationFillMode:"both",
               }}>
-                <div style={{flex:1,height:1,background:"linear-gradient(to right,transparent,#C9A96E80)"}}/>
-                <svg width="12" height="12" viewBox="0 0 12 12">
-                  <path d="M6 0L7.2 4.8L12 6L7.2 7.2L6 12L4.8 7.2L0 6L4.8 4.8Z" fill="#C9A96E" opacity="0.8"/>
+                <div style={{flex:1,height:"0.5px",background:"linear-gradient(to right,transparent,#C9A96E80)"}}/>
+                <svg width="10" height="10" viewBox="0 0 12 12">
+                  <path d="M6 0L7.2 4.8L12 6L7.2 7.2L6 12L4.8 7.2L0 6L4.8 4.8Z" fill="#C9A96E" opacity="0.9"/>
                 </svg>
-                <div style={{flex:1,height:1,background:"linear-gradient(to left,transparent,#C9A96E80)"}}/>
+                <div style={{flex:1,height:"0.5px",background:"linear-gradient(to left,transparent,#C9A96E80)"}}/>
               </div>
 
-              {/* Date */}
               <div style={{
-                fontSize:10,letterSpacing:4,color:"#6B4A10",textTransform:"uppercase",
-                marginBottom:6,fontFamily:"Inter,sans-serif",
-                animation:"fadeUp 0.8s 1.3s ease both",opacity:0,
-                animationFillMode:"forwards",
+                fontSize:10,letterSpacing:4,color:T.gray1,
+                textTransform:"uppercase",marginBottom:6,
+                fontFamily:"Inter,sans-serif",
+                animation:"fadeUp 0.7s 0.8s ease both",animationFillMode:"both",
               }}>
                 20 · 21 September 2026
               </div>
-
-              {/* Venue */}
               <div style={{
-                fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",
-                fontSize:13,color:"#8B6914",letterSpacing:1,
-                animation:"fadeUp 0.8s 1.5s ease both",opacity:0,
-                animationFillMode:"forwards",
+                fontFamily:"'Cormorant Garamond',serif",
+                fontStyle:"italic",fontSize:14,
+                color:T.gold,letterSpacing:1,
+                animation:"fadeUp 0.7s 1s ease both",animationFillMode:"both",
               }}>
                 Vivan Resort, Karnal
               </div>
             </div>
           </div>
-        )}
 
-        {/* ── Envelope body ── */}
-        <div style={{
-          position:"relative",width:EW,height:EH,
-          zIndex:3,
-          borderRadius:"2px 2px 8px 8px",
-          overflow:"hidden",
-          boxShadow:"0 30px 100px rgba(0,0,0,0.9),0 8px 24px rgba(0,0,0,0.5)",
-        }}>
-          {/* Back face (inside of envelope — warm cream) */}
           <div style={{
-            position:"absolute",inset:0,
-            background:"linear-gradient(180deg,#E8D9B0 0%,#F0E4C4 100%)",
-          }}/>
-
-          {/* Front face */}
-          <div style={{
-            position:"absolute",inset:0,
-            background:"linear-gradient(145deg,#FEFBF0 0%,#F5ECD5 45%,#EAD9B8 100%)",
+            marginTop:28,fontSize:9,
+            letterSpacing:4,color:T.gray3,
+            textTransform:"uppercase",
+            animation:"fadeIn 0.8s 1.4s ease both",animationFillMode:"both",
           }}>
-            {/* paper texture */}
-            <div style={{
-              position:"absolute",inset:0,
-              backgroundImage:"repeating-linear-gradient(0deg,rgba(180,140,60,0.04) 0px,rgba(180,140,60,0.04) 1px,transparent 1px,transparent 18px)",
-            }}/>
-            {/* diagonal seam lines (V-fold) */}
-            <svg style={{position:"absolute",inset:0,width:"100%",height:"100%"}} viewBox={`0 0 ${EW} ${EH}`}>
-              <line x1="0" y1={EH} x2={EW/2} y2={EH*0.5} stroke="#C9A96E" strokeWidth="0.6" opacity="0.2"/>
-              <line x1={EW} y1={EH} x2={EW/2} y2={EH*0.5} stroke="#C9A96E" strokeWidth="0.6" opacity="0.2"/>
-              <line x1="0" y1="0" x2={EW/2} y2={EH*0.5} stroke="#C9A96E" strokeWidth="0.5" opacity="0.15"/>
-              <line x1={EW} y1="0" x2={EW/2} y2={EH*0.5} stroke="#C9A96E" strokeWidth="0.5" opacity="0.15"/>
-              {/* inset border */}
-              <rect x="7" y="7" width={EW-14} height={EH-14} rx="1" fill="none" stroke="#C9A96E" strokeWidth="0.6" opacity="0.35"/>
-              {/* corner stamps */}
-              <circle cx="15" cy="15" r="4" fill="none" stroke="#C9A96E" strokeWidth="0.5" opacity="0.3"/>
-              <circle cx={EW-15} cy="15" r="4" fill="none" stroke="#C9A96E" strokeWidth="0.5" opacity="0.3"/>
-            </svg>
-            {/* Bottom address area */}
-            <div style={{
-              position:"absolute",bottom:16,left:0,right:0,textAlign:"center",
-            }}>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",
-                fontSize:16,fontWeight:400,color:"#6B4A10",letterSpacing:2,opacity:0.65}}>
-                Manan &amp; Shrishti
-              </div>
-              <div style={{fontSize:7,letterSpacing:4,color:"#8B6914",marginTop:4,
-                textTransform:"uppercase",opacity:0.45,fontFamily:"Inter,sans-serif"}}>
-                September 2026 · Karnal
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Envelope flap ── */}
-        <div style={{
-          position:"absolute",top:0,left:0,width:EW,
-          transformOrigin:"top center",
-          transformStyle:"preserve-3d",
-          transition:"transform 1.5s cubic-bezier(0.35,0,0.1,1)",
-          transform:`rotateX(${flapAngle}deg)`,
-          zIndex:4,
-        }}>
-          <svg width={EW} height={EH*0.62} viewBox={`0 0 ${EW} ${EH*0.62}`} style={{display:"block"}}>
-            <defs>
-              <linearGradient id="flapFront" x1="0%" y1="0%" x2="50%" y2="100%">
-                <stop offset="0%" stopColor="#FEFBF0"/>
-                <stop offset="100%" stopColor="#E8D5A8"/>
-              </linearGradient>
-              <linearGradient id="flapBack" x1="0%" y1="0%" x2="50%" y2="100%">
-                <stop offset="0%" stopColor="#D4B870"/>
-                <stop offset="100%" stopColor="#C0A050"/>
-              </linearGradient>
-            </defs>
-            {/* flap front */}
-            <polygon
-              points={`0,0 ${EW},0 ${EW/2},${EH*0.58}`}
-              fill="url(#flapFront)" stroke="#C9A96E" strokeWidth="0.6" opacity="0.9"/>
-            {/* subtle sheen on flap */}
-            <polygon
-              points={`0,0 ${EW*0.5},0 ${EW*0.35},${EH*0.3}`}
-              fill="rgba(255,255,230,0.12)"/>
-            {/* crease lines */}
-            <line x1="0" y1="0" x2={EW/2} y2={EH*0.58} stroke="#C9A96E" strokeWidth="0.5" opacity="0.2"/>
-            <line x1={EW} y1="0" x2={EW/2} y2={EH*0.58} stroke="#C9A96E" strokeWidth="0.5" opacity="0.2"/>
-          </svg>
-        </div>
-
-        {/* ── Wax seal ── sits on flap seam ── */}
-        <div style={{
-          position:"absolute",
-          top: EH * 0.55 - 50,
-          left:"50%",transform:"translateX(-50%)",
-          zIndex:6,
-          opacity:flapAngle < -30 ? 0 : 1,
-          transition:"opacity 0.3s ease",
-        }}>
-          <WaxSeal size={100} cracking={phase==="seal"}/>
-        </div>
-
-      </div>{/* end perspective wrapper */}
-
-      {/* ── Tap prompt ── */}
-      {phase==="idle" && (
-        <div style={{
-          marginTop:44,textAlign:"center",
-          animation:"fadeUp 1.4s 1.4s ease both",
-          display:"flex",flexDirection:"column",alignItems:"center",gap:14,
-        }}>
-          {/* animated envelope icon */}
-          <svg width="56" height="40" viewBox="0 0 56 40" fill="none"
-            style={{animation:"envPulse 2.4s ease-in-out infinite",filter:"drop-shadow(0 2px 10px rgba(201,169,110,0.4))"}}>
-            <rect x="1.5" y="1.5" width="53" height="37" rx="5"
-              fill="#F5EDD8" stroke="#C9A96E" strokeWidth="1.4"/>
-            <path d="M1.5 7 L28 25 L54.5 7" stroke="#C9A96E" strokeWidth="1.4" fill="none"/>
-            <line x1="1.5" y1="37.5" x2="20" y2="20" stroke="#C9A96E" strokeWidth="0.8" opacity="0.45"/>
-            <line x1="54.5" y1="37.5" x2="36" y2="20" stroke="#C9A96E" strokeWidth="0.8" opacity="0.45"/>
-            {/* seal dot */}
-            <circle cx="28" cy="19" r="3.5" fill="#C9A96E" opacity="0.6"/>
-          </svg>
-          <div style={{fontSize:9,letterSpacing:5,color:"#555",textTransform:"uppercase",fontFamily:"Inter,sans-serif"}}>
-            tap to open
+            tap anywhere to continue
           </div>
         </div>
       )}
-
     </div>
   );
 }
