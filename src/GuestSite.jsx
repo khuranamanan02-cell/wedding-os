@@ -13,9 +13,6 @@ const PHOTO_FORMAL = "https://res.cloudinary.com/dmmstltmq/image/upload/f_auto,q
 const PHOTO_NEW1   = "https://res.cloudinary.com/dmmstltmq/image/upload/f_auto,q_auto/_APY3401_6103245_lfst7l";
 const PHOTO_NEW2   = "https://res.cloudinary.com/dmmstltmq/image/upload/f_auto,q_auto/1000652228_l6op6j";
 
-// REPLACE each REPLACE_scrap_XX with your Cloudinary public ID after uploading
-// SCRAP_01 → ISB nameplate classroom     SCRAP_02 → ISB nameplate classroom 2
-// SCRAP_03 → graduation robes            SCRAP_04 → red dress ISB garden
 const SCRAP_01 = "https://res.cloudinary.com/dmmstltmq/image/upload/v1784060819/WhatsApp_Image_2026-07-15_at_1.02.02_AM_h2szzl.jpg";
 const SCRAP_02 = "https://res.cloudinary.com/dmmstltmq/image/upload/v1784060819/WhatsApp_Image_2026-07-15_at_12.57.15_AM_e0m0cl.jpg";
 const SCRAP_03 = "https://res.cloudinary.com/dmmstltmq/image/upload/v1784060820/WhatsApp_Image_2026-07-15_at_12.58.25_AM_obwcik.jpg";
@@ -56,7 +53,7 @@ function useReveal(threshold=0.1) {
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html{scroll-behavior:smooth;}
 body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif;background:#080808;color:#fff;overflow-x:hidden;}
@@ -79,6 +76,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text'
 @keyframes scratchReveal{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
 @keyframes navFadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes cursorFade{0%{opacity:0.8;transform:scale(1)}100%{opacity:0;transform:scale(0)}}
+@keyframes petalDrift{0%{transform:translateY(0) rotate(0deg);opacity:0}15%{opacity:0.5}85%{opacity:0.2}100%{transform:translateY(-200px) translateX(40px) rotate(180deg);opacity:0}}
 
 .gold-shimmer{background:linear-gradient(90deg,#8B6914 0%,#C9A96E 25%,#F5E4B0 50%,#C9A96E 75%,#8B6914 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 5s linear infinite;}
 
@@ -86,7 +84,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text'
 
 .polaroid{background:#F5EDD8;padding:10px 10px 36px;box-shadow:0 8px 32px rgba(0,0,0,0.55);transition:transform 0.4s cubic-bezier(0.23,1,0.32,1),box-shadow 0.4s ease;cursor:pointer;}
 .polaroid:hover{transform:rotate(0deg) scale(1.06)!important;box-shadow:0 24px 64px rgba(0,0,0,0.7)!important;z-index:10;position:relative;}
-.polaroid-caption{font-family:'Great Vibes',cursive;color:#3a2f1e;font-size:16px;text-align:center;margin-top:8px;line-height:1.3;}
+.polaroid-caption{font-family:'Cormorant Garamond',serif;font-style:italic;color:#3a2f1e;font-size:15px;text-align:center;margin-top:8px;line-height:1.3;font-weight:400;}
 
 .event-card{transition:transform 0.3s ease,border-color 0.3s ease;border:1px solid #2A2621;}
 .event-card:hover{transform:translateX(6px);border-color:#C9A96E50!important;}
@@ -115,7 +113,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text'
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;}}
 `;
 
-// ─── SVG ICONS ────────────────────────────────────────────────────────────────
+// ─── SVG DECORATIONS ──────────────────────────────────────────────────────────
 function Mandala({ size=200, opacity=0.06 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 200 200" style={{opacity}}>
@@ -135,6 +133,44 @@ function Mandala({ size=200, opacity=0.06 }) {
         <circle cx="0" cy="0" r="16" fill="none" stroke="#C9A96E" strokeWidth="0.8"/>
         <circle cx="0" cy="0" r="8" fill="none" stroke="#C9A96E" strokeWidth="0.5"/>
         <circle cx="0" cy="0" r="3" fill="#C9A96E"/>
+      </g>
+    </svg>
+  );
+}
+
+// Delicate lotus petal background motif — replaces the orbiting planet rings
+function LotusBg({ opacity=0.04 }) {
+  return (
+    <svg width="420" height="420" viewBox="0 0 420 420" style={{opacity,pointerEvents:"none"}}>
+      <g transform="translate(210,210)">
+        {/* outer ring petals */}
+        {[0,40,80,120,160,200,240,280,320].map(a=>(
+          <g key={a} transform={`rotate(${a})`}>
+            <path d="M0,-160 C20,-130 20,-100 0,-80 C-20,-100 -20,-130 0,-160Z" fill="#C9A96E" opacity="0.6"/>
+          </g>
+        ))}
+        {/* mid ring petals */}
+        {[20,60,100,140,180,220,260,300,340].map(a=>(
+          <g key={a} transform={`rotate(${a})`}>
+            <path d="M0,-105 C13,-85 13,-65 0,-50 C-13,-65 -13,-85 0,-105Z" fill="#C9A96E" opacity="0.5"/>
+          </g>
+        ))}
+        {/* inner petals */}
+        {[0,45,90,135,180,225,270,315].map(a=>(
+          <g key={a} transform={`rotate(${a})`}>
+            <path d="M0,-55 C8,-42 8,-30 0,-22 C-8,-30 -8,-42 0,-55Z" fill="#C9A96E" opacity="0.7"/>
+          </g>
+        ))}
+        {/* decorative rings */}
+        <circle cx="0" cy="0" r="170" fill="none" stroke="#C9A96E" strokeWidth="0.4" opacity="0.4"/>
+        <circle cx="0" cy="0" r="112" fill="none" stroke="#C9A96E" strokeWidth="0.3" opacity="0.4"/>
+        <circle cx="0" cy="0" r="60" fill="none" stroke="#C9A96E" strokeWidth="0.5" opacity="0.5"/>
+        <circle cx="0" cy="0" r="20" fill="none" stroke="#C9A96E" strokeWidth="0.8" opacity="0.6"/>
+        <circle cx="0" cy="0" r="5" fill="#C9A96E" opacity="0.8"/>
+        {/* dot accents at petal tips */}
+        {[0,40,80,120,160,200,240,280,320].map(a=>(
+          <circle key={a} cx={Math.cos((a-90)*Math.PI/180)*163} cy={Math.sin((a-90)*Math.PI/180)*163} r="1.5" fill="#C9A96E" opacity="0.8"/>
+        ))}
       </g>
     </svg>
   );
@@ -238,6 +274,7 @@ function Eyebrow({ children, visible, delay=0 }) {
   );
 }
 
+// Floating gold particles
 function Particles({ count=14 }) {
   const ps = useRef(Array.from({length:count},(_,i)=>({id:i,left:Math.random()*100,delay:Math.random()*10,duration:7+Math.random()*9,size:1+Math.random()*1.5}))).current;
   return (
@@ -252,7 +289,6 @@ function Particles({ count=14 }) {
 // ─── CURSOR TRAIL ─────────────────────────────────────────────────────────────
 function CursorTrail() {
   useEffect(()=>{
-    const particles=[];
     const onMove=(e)=>{
       const p=document.createElement("div");
       const size=2+Math.random()*3;
@@ -264,7 +300,6 @@ function CursorTrail() {
         animation:"cursorFade 0.8s ease forwards",
       });
       document.body.appendChild(p);
-      particles.push(p);
       setTimeout(()=>{p.remove();},800);
     };
     window.addEventListener("mousemove",onMove);
@@ -300,7 +335,7 @@ function Nav() {
       transition:"all 0.4s ease",
       animation:"navFadeIn 1s 1s ease both",
     }}>
-      <div style={{fontFamily:"'Great Vibes',cursive",fontSize:22,color:T.gold}}>M & S</div>
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:400,color:T.gold,fontStyle:"italic"}}>M & S</div>
       <div style={{display:"flex",gap:32}}>
         {["events","venue","gallery","rsvp"].map(id=>(
           <a key={id} href={`#${id}`} className={`nav-link${active===id?" active":""}`}>{id}</a>
@@ -345,7 +380,7 @@ function WaxSeal({ size=72, cracking=false }) {
         </defs>
         <circle cx="36" cy="36" r="32" fill="url(#sg)"/>
         <circle cx="36" cy="36" r="25" fill="none" stroke="#C9A96E" strokeWidth="0.8" opacity="0.5"/>
-        <text x="36" y="42" textAnchor="middle" fontSize="20" fill="#F5E4B0" fontFamily="'Great Vibes',cursive">M</text>
+        <text x="36" y="42" textAnchor="middle" fontSize="20" fill="#F5E4B0" fontFamily="'Cormorant Garamond',serif" fontStyle="italic">M</text>
       </svg>
     </div>
   );
@@ -374,7 +409,7 @@ function OpeningSequence({ onComplete }) {
       <Particles count={10}/>
       {phase==="idle"&&(
         <div style={{position:"absolute",top:"20%",textAlign:"center",animation:"fadeIn 2s ease both"}}>
-          <div style={{fontFamily:"'Great Vibes',cursive",fontSize:"clamp(16px,4vw,22px)",color:T.gold,opacity:0.65,letterSpacing:2}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:"clamp(17px,4vw,24px)",color:T.gold,opacity:0.65,letterSpacing:1,fontWeight:300}}>
             something arrived for you
           </div>
         </div>
@@ -387,7 +422,8 @@ function OpeningSequence({ onComplete }) {
             <line x1="300" y1="0" x2="150" y2="95" stroke="#C9A96E" strokeWidth="0.5"/>
           </svg>
           <div style={{position:"absolute",bottom:24,left:0,right:0,textAlign:"center"}}>
-            <div style={{fontFamily:"'Great Vibes',cursive",fontSize:24,color:T.goldLight,opacity:0.55}}>Manan & Shrishti</div>
+            {/* FIXED: both names same font/size, equal weight */}
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:400,color:T.goldLight,opacity:0.6,letterSpacing:1}}>Manan & Shrishti</div>
             <div style={{fontSize:9,letterSpacing:3,color:T.gray2,marginTop:4,textTransform:"uppercase"}}>20 · 21 September 2026</div>
           </div>
         </div>
@@ -401,11 +437,14 @@ function OpeningSequence({ onComplete }) {
         <div style={{position:"absolute",top:70,left:"50%",transform:"translateX(-50%)",zIndex:10,opacity:flapOpen?0:1,transition:"opacity 0.3s ease 0.4s"}}>
           <WaxSeal size={68} cracking={phase==="seal"}/>
         </div>
-        {/* Card slides out */}
+        {/* Card slides out — FIXED: names equal size and weight */}
         {(phase==="card"||phase==="done")&&(
           <div style={{position:"absolute",top:-80,left:16,right:16,background:"#1A1510",border:`1px solid ${T.borderG}`,borderRadius:8,padding:"22px 28px",textAlign:"center",animation:"cardSlide 0.9s cubic-bezier(0.16,1,0.3,1) both",boxShadow:"0 -12px 48px rgba(0,0,0,0.7)"}}>
-            <div style={{fontSize:9,letterSpacing:4,color:T.gold,textTransform:"uppercase",marginBottom:8}}>You are cordially invited</div>
-            <div style={{fontFamily:"'Great Vibes',cursive",fontSize:30,color:T.white,marginBottom:8}}>Manan & Shrishti</div>
+            <div style={{fontSize:9,letterSpacing:4,color:T.gold,textTransform:"uppercase",marginBottom:10}}>You are cordially invited</div>
+            {/* Equal names: Cormorant Garamond, same size, same weight */}
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:32,fontWeight:400,color:T.white,marginBottom:2,letterSpacing:1}}>Manan</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:14,color:T.gold,letterSpacing:4,marginBottom:2}}>&</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:32,fontWeight:400,color:T.white,marginBottom:10,letterSpacing:1}}>Shrishti</div>
             <div style={{fontSize:10,letterSpacing:3,color:T.gray1,textTransform:"uppercase"}}>20 · 21 September 2026</div>
             <div style={{fontSize:10,letterSpacing:2,color:T.gray2,marginTop:4}}>Vivan Resort · Karnal</div>
           </div>
@@ -433,14 +472,15 @@ function Hero() {
       <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,#080808 0%,rgba(8,8,8,0.72) 35%,rgba(8,8,8,0.12) 100%)"}}/>
       <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at center,transparent 40%,rgba(8,8,8,0.55) 100%)"}}/>
       <Particles count={16}/>
-      <div style={{position:"absolute",top:-40,right:-40,animation:"rotateSlow 90s linear infinite",pointerEvents:"none"}}><Mandala size={240} opacity={0.07}/></div>
+      <div style={{position:"absolute",top:-40,right:-40,pointerEvents:"none",opacity:0.05}}><LotusBg opacity={1}/></div>
       <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",padding:"0 24px 56px",textAlign:"center"}}>
         <div style={{fontSize:10,letterSpacing:6,color:T.gold,textTransform:"uppercase",marginBottom:20,fontWeight:400,opacity:ready?1:0,animation:ready?"fadeUp 1s 0.1s ease both":"none"}}>
           We're getting married
         </div>
-        <div style={{opacity:ready?1:0,animation:ready?"fadeUp 1.1s 0.35s ease both":"none",lineHeight:0.9,marginBottom:10}}>
-          <div style={{fontSize:"clamp(54px,13vw,110px)",color:T.white,letterSpacing:-2,fontWeight:600}}>Manan</div>
-          <div style={{fontFamily:"'Great Vibes',cursive",fontSize:"clamp(30px,6vw,52px)",color:T.gold,margin:"6px 0 8px",display:"block"}}>& Shrishti</div>
+        {/* FIXED hero: both names same font family, equal visual weight */}
+        <div style={{opacity:ready?1:0,animation:ready?"fadeUp 1.1s 0.35s ease both":"none",marginBottom:10,textAlign:"center"}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(64px,14vw,120px)",fontWeight:300,color:T.white,letterSpacing:-1,lineHeight:0.95}}>Manan</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(18px,3vw,28px)",color:T.gold,letterSpacing:8,margin:"10px 0 6px",fontWeight:300,textTransform:"uppercase"}}>& Shrishti</div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:16,margin:"20px 0",opacity:ready?1:0,animation:ready?"fadeUp 0.9s 0.6s ease both":"none"}}>
           <div style={{height:1,width:40,background:"linear-gradient(to left,#C9A96E,transparent)"}}/>
@@ -470,14 +510,15 @@ function Hero() {
 }
 
 // ─── SCROLL TEXT INTERLUDE ─────────────────────────────────────────────────────
+// UPDATED: removed ISB line, replaced with wedding-centric poetry
 const SCROLL_LINES = [
-  "We met at ISB during a dance performance.",
-  "We became friends first.",
-  "Then something changed.",
+  "Two families.",
+  "One moment.",
+  "A love that chose its own time.",
   "He proposed in Kasauli.",
   "She said yes.",
-  "Now we're getting married",
-  "on the twentieth of September,",
+  "Now everything is leading to",
+  "the twentieth of September,",
   "in Karnal, at the Vivan Resort,",
   "and we want you there.",
   "Both days. Every moment.",
@@ -500,13 +541,15 @@ function ScrollLine({ text, index }) {
   },[]);
   return (
     <div ref={ref} style={{
-      fontSize:"clamp(20px,3.5vw,36px)",
+      fontFamily:"'Cormorant Garamond',serif",
+      fontSize:"clamp(22px,4vw,40px)",
       fontWeight:300,
+      fontStyle: index % 3 === 1 ? "italic" : "normal",
       lineHeight:1.7,
       color:`rgba(201,169,110,${0.12+progress*0.88})`,
       transform:`translateY(${(1-progress)*12}px)`,
       transition:"color 0.1s,transform 0.1s",
-      letterSpacing:-0.5,
+      letterSpacing:0,
     }}>
       {text}
     </div>
@@ -516,9 +559,7 @@ function ScrollLine({ text, index }) {
 function ScrollInterlude() {
   return (
     <section style={{background:T.black,padding:"120px 24px",position:"relative",overflow:"hidden"}}>
-      <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",animation:"rotateSlowR 180s linear infinite",pointerEvents:"none"}}>
-        <Mandala size={600} opacity={0.02}/>
-      </div>
+      <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",pointerEvents:"none",opacity:0.025}}><LotusBg opacity={1}/></div>
       <div style={{maxWidth:680,margin:"0 auto",textAlign:"center"}}>
         {SCROLL_LINES.map((line,i)=>(
           <ScrollLine key={i} text={line} index={i}/>
@@ -592,14 +633,12 @@ function EventCard({ ev, visible, delay }) {
             <div style={{fontSize:11,letterSpacing:2,color:T.gold,textTransform:"uppercase"}}>{ev.time}</div>
           </div>
           <p style={{fontSize:14,color:T.gray1,lineHeight:1.8,fontWeight:300,marginBottom:12}}>{ev.desc}</p>
-          {/* Colour swatches */}
           <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
             <div style={{fontSize:9,letterSpacing:2,color:T.gray2,textTransform:"uppercase",marginRight:4}}>Dress code</div>
             {ev.colours.map((c,i)=>(
               <div key={i} style={{width:18,height:18,borderRadius:"50%",background:c,border:"1.5px solid rgba(255,255,255,0.12)",flexShrink:0}}/>
             ))}
           </div>
-          {/* Expandable details */}
           {open&&(
             <div style={{marginTop:16,paddingTop:16,borderTop:`1px solid ${T.border}`,animation:"fadeIn 0.3s ease"}}>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:ev.note?12:0}}>
@@ -689,8 +728,9 @@ function Venue() {
             </div>
           ))}
         </div>
+        {/* REMOVED: "80 rooms reserved" note */}
         <div style={{textAlign:"center",fontSize:13,color:T.gray2,lineHeight:2,opacity:visible?1:0,animation:visible?"fadeUp 0.9s 0.6s ease both":"none"}}>
-          80 rooms have been reserved for outstation guests. Let us know your needs in the RSVP and we'll take care of everything.
+          Outstation guests — let us know your accommodation needs in the RSVP and we'll take care of everything.
         </div>
       </div>
     </section>
@@ -701,7 +741,7 @@ function Venue() {
 const PHOTOS = [
   {src:SCRAP_03,caption:"the night it all changed",rotate:-3.5},
   {src:PHOTO_FORMAL,caption:"Roka, February 2026",rotate:2.2},
-  {src:SCRAP_04,caption:"where it began — ISB",rotate:-1.8},
+  {src:SCRAP_04,caption:"where it began",rotate:-1.8},
   {src:SCRAP_01,caption:"an evening to remember",rotate:2.5},
   {src:PHOTO_FUN,caption:"the photoshoot laugh",rotate:1.5},
   {src:SCRAP_02,caption:"somewhere beautiful",rotate:-4.0},
@@ -713,7 +753,7 @@ function Scrapbook() {
   const [ref,visible]=useReveal(0.04);
   return (
     <section id="gallery" ref={ref} style={{background:T.ink,padding:"96px 24px 80px",position:"relative",overflow:"hidden"}}>
-      <div style={{position:"absolute",bottom:-80,left:"50%",transform:"translateX(-50%)",animation:"rotateSlow 150s linear infinite",pointerEvents:"none"}}><Mandala size={500} opacity={0.02}/></div>
+      <div style={{position:"absolute",bottom:-120,left:"50%",transform:"translateX(-50%)",pointerEvents:"none",opacity:0.03}}><LotusBg opacity={1}/></div>
       <div style={{maxWidth:920,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:56}}>
           <Eyebrow visible={visible}>Before September</Eyebrow>
@@ -741,14 +781,12 @@ function ScratchCard() {
   const canvasRef=useRef(null);
   const [revealed,setRevealed]=useState(false);
   const [scratching,setScratching]=useState(false);
-  const scratched=useRef(0);
 
   useEffect(()=>{
     const canvas=canvasRef.current; if(!canvas) return;
     const ctx=canvas.getContext("2d");
     ctx.fillStyle="#1A1510";
     ctx.fillRect(0,0,canvas.width,canvas.height);
-    // Gold texture overlay
     ctx.fillStyle="#C9A96E";
     for(let i=0;i<canvas.width;i+=4){
       for(let j=0;j<canvas.height;j+=4){
@@ -773,7 +811,6 @@ function ScratchCard() {
     ctx.beginPath();
     ctx.arc(cx,cy,24,0,Math.PI*2);
     ctx.fill();
-    // Check reveal %
     const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
     let transparent=0;
     for(let i=3;i<data.length;i+=4){ if(data[i]===0) transparent++; }
@@ -786,9 +823,8 @@ function ScratchCard() {
 
   return (
     <div style={{position:"relative",width:280,height:120,margin:"0 auto",borderRadius:12,overflow:"hidden"}}>
-      {/* Message underneath */}
       <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 20px",background:T.surface2}}>
-        <div style={{fontFamily:"'Great Vibes',cursive",fontSize:22,color:T.gold,marginBottom:8,lineHeight:1.3}}>You just made our wedding more beautiful.</div>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:22,color:T.gold,marginBottom:8,lineHeight:1.3}}>You just made our wedding more beautiful.</div>
         <div style={{fontSize:12,color:T.gray1,letterSpacing:1}}>See you in September ❤️</div>
       </div>
       <canvas ref={canvasRef} width={560} height={240} className="scratch-canvas"
@@ -850,7 +886,7 @@ function RSVP() {
   const inp={width:"100%",padding:"14px 16px",borderRadius:12,fontSize:15,fontFamily:"inherit"};
   const steps=[
     <div key={0}>
-      <div style={{fontFamily:"'Great Vibes',cursive",fontSize:32,color:T.gold,textAlign:"center",marginBottom:8}}>Let us know who's coming</div>
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:34,color:T.gold,textAlign:"center",marginBottom:8}}>Let us know who's coming</div>
       <p style={{textAlign:"center",color:T.gray1,fontSize:14,lineHeight:1.8,marginBottom:28,fontWeight:300}}>We'd love to put your name on our list.</p>
       {[{label:"Your name *",field:"name",type:"text",ph:"Full name"},{label:"Phone *",field:"phone",type:"tel",ph:"+91 98765 43210"},{label:"Email (optional)",field:"email",type:"email",ph:"For updates closer to the date"}].map(({label,field,type,ph})=>(
         <div key={field} style={{marginBottom:14}}>
@@ -860,7 +896,7 @@ function RSVP() {
       ))}
     </div>,
     <div key={1} style={{textAlign:"center"}}>
-      <div style={{fontFamily:"'Great Vibes',cursive",fontSize:32,color:T.gold,marginBottom:8}}>Will you be joining us?</div>
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:34,color:T.gold,marginBottom:8}}>Will you be joining us?</div>
       <p style={{color:T.gray1,fontSize:14,lineHeight:1.8,marginBottom:32,fontWeight:300}}>Either way, thank you for letting us know.</p>
       <div style={{display:"flex",flexDirection:"column",gap:12,maxWidth:300,margin:"0 auto"}}>
         {[{v:"yes",e:"❤️",l:"Absolutely, I'll be there"},{v:"no",e:"💔",l:"I'm so sorry, I can't make it"}].map(o=>(
@@ -873,7 +909,7 @@ function RSVP() {
       </div>
     </div>,
     <div key={2}>
-      <div style={{fontFamily:"'Great Vibes',cursive",fontSize:32,color:T.gold,textAlign:"center",marginBottom:8}}>Which events will you attend?</div>
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:34,color:T.gold,textAlign:"center",marginBottom:8}}>Which events will you attend?</div>
       <p style={{textAlign:"center",color:T.gray1,fontSize:14,lineHeight:1.8,marginBottom:24,fontWeight:300}}>Select everything you're planning to join.</p>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {EVENT_OPTIONS.map(ev=>{
@@ -895,8 +931,9 @@ function RSVP() {
       </div>
     </div>,
     <div key={3}>
-      <div style={{fontFamily:"'Great Vibes',cursive",fontSize:32,color:T.gold,textAlign:"center",marginBottom:8}}>Your stay</div>
-      <p style={{textAlign:"center",color:T.gray1,fontSize:14,lineHeight:1.8,marginBottom:24,fontWeight:300}}>80 rooms reserved for outstation guests.</p>
+      {/* REMOVED "80 rooms reserved" line */}
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:34,color:T.gold,textAlign:"center",marginBottom:8}}>Your stay</div>
+      <p style={{textAlign:"center",color:T.gray1,fontSize:14,lineHeight:1.8,marginBottom:24,fontWeight:300}}>Let us know and we'll make sure you're taken care of.</p>
       <div style={{marginBottom:24}}>
         <label style={{fontSize:10,fontWeight:500,color:T.gray2,display:"block",marginBottom:10,letterSpacing:2,textTransform:"uppercase"}}>Accommodation needed</label>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -917,7 +954,7 @@ function RSVP() {
       </div>
     </div>,
     <div key={4} style={{textAlign:"center"}}>
-      <div style={{fontFamily:"'Great Vibes',cursive",fontSize:32,color:T.gold,marginBottom:8}}>Anything else?</div>
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:34,color:T.gold,marginBottom:8}}>Anything else?</div>
       <p style={{color:T.gray1,fontSize:14,lineHeight:1.8,marginBottom:24,fontWeight:300}}>Dietary preferences, a message for us,<br/>something we should know.</p>
       <textarea className="rsvp-input" style={{...inp,resize:"none",minHeight:120,textAlign:"left"}} rows={5} placeholder="Write something warm… or anything useful 🙂" value={form.message} onChange={e=>setForm(f=>({...f,message:e.target.value}))}/>
     </div>,
@@ -925,7 +962,7 @@ function RSVP() {
 
   return (
     <section id="rsvp" ref={ref} style={{background:T.black,padding:"96px 24px 120px",position:"relative",overflow:"hidden"}}>
-      <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",animation:"rotateSlow 180s linear infinite",pointerEvents:"none"}}><Mandala size={600} opacity={0.02}/></div>
+      <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",pointerEvents:"none",opacity:0.025}}><LotusBg opacity={1}/></div>
       <div style={{maxWidth:520,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:56}}>
           <Eyebrow visible={visible}>Your place at our table</Eyebrow>
@@ -952,7 +989,6 @@ function RSVP() {
           </div>
         ):(
           <div style={{background:T.surface1,borderRadius:24,padding:"40px 32px",border:`1px solid ${T.border}`,opacity:visible?1:0,animation:visible?"scaleIn 0.8s 0.3s ease both":"none"}}>
-            {/* Step indicator */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:40}}>
               {STEP_LABELS.map((label,i)=>(
                 <div key={i} style={{display:"flex",alignItems:"center",gap:6}}>
@@ -1010,9 +1046,9 @@ function ContactStrip() {
 function Footer() {
   return (
     <footer style={{background:T.surface2,padding:"72px 24px 48px",textAlign:"center",position:"relative",overflow:"hidden"}}>
-      <div style={{position:"absolute",bottom:-80,left:"50%",transform:"translateX(-50%)",animation:"rotateSlow 40s linear infinite",pointerEvents:"none"}}><Mandala size={320} opacity={0.06}/></div>
-      <div style={{animation:"rotateSlow 60s linear infinite",display:"inline-block",marginBottom:24}}><Mandala size={52} opacity={0.5}/></div>
-      <div style={{fontFamily:"'Great Vibes',cursive",fontSize:52,color:T.gold,marginBottom:4}}>Manan & Shrishti</div>
+      <div style={{position:"absolute",bottom:-120,left:"50%",transform:"translateX(-50%)",pointerEvents:"none",opacity:0.05}}><LotusBg opacity={1}/></div>
+      <div style={{display:"inline-block",marginBottom:24,opacity:0.5}}><Mandala size={52} opacity={1}/></div>
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:52,fontWeight:400,color:T.gold,marginBottom:4,letterSpacing:1}}>Manan & Shrishti</div>
       <div style={{fontSize:11,color:T.gray2,marginBottom:4,letterSpacing:4,textTransform:"uppercase"}}>September 20 – 21, 2026</div>
       <div style={{fontSize:11,color:T.gray3,marginBottom:40}}>Vivan Resort · Karnal, Haryana</div>
       <GoldDivider/>
