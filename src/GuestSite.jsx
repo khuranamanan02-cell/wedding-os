@@ -11,7 +11,6 @@ const PHOTO_HERO   = "https://res.cloudinary.com/dmmstltmq/image/upload/f_auto,q
 const PHOTO_FUN    = "https://res.cloudinary.com/dmmstltmq/image/upload/f_auto,q_auto/_APY3742_8619132_jm4rla";
 const PHOTO_FORMAL = "https://res.cloudinary.com/dmmstltmq/image/upload/f_auto,q_auto/_APY3384_8869296_zgmdw5";
 const PHOTO_NEW1   = "https://res.cloudinary.com/dmmstltmq/image/upload/f_auto,q_auto/_APY3401_6103245_lfst7l";
-const PHOTO_NEW2   = "https://res.cloudinary.com/dmmstltmq/image/upload/f_auto,q_auto/1000652228_l6op6j";
 
 const SCRAP_01 = "https://res.cloudinary.com/dmmstltmq/image/upload/v1784060819/WhatsApp_Image_2026-07-15_at_1.02.02_AM_h2szzl.jpg";
 const SCRAP_02 = "https://res.cloudinary.com/dmmstltmq/image/upload/v1784060819/WhatsApp_Image_2026-07-15_at_12.57.15_AM_e0m0cl.jpg";
@@ -65,61 +64,46 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text'
 @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 @keyframes floatY2{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes rotateSlow{to{transform:rotate(360deg)}}
-@keyframes rotateSlowR{to{transform:rotate(-360deg)}}
 @keyframes slowZoom{from{transform:scale(1)}to{transform:scale(1.06)}}
 @keyframes particleDrift{0%{transform:translateY(0) translateX(0);opacity:0}20%{opacity:0.7}80%{opacity:0.3}100%{transform:translateY(-140px) translateX(20px);opacity:0}}
 @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
-@keyframes sealCrack{0%,70%{opacity:1;transform:scale(1)}85%{transform:scale(1.08)}100%{opacity:0;transform:scale(0.3)}}
-@keyframes waxWobble{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
-@keyframes cardSlide{0%{opacity:0;transform:translateY(70px)}100%{opacity:1;transform:translateY(0)}}
-@keyframes flapOpen{0%{transform:rotateX(0deg)}100%{transform:rotateX(-170deg)}}
-@keyframes scratchReveal{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+@keyframes waxWobble{0%,100%{transform:rotate(-1.5deg) scale(1)}50%{transform:rotate(1.5deg) scale(1.03)}}
 @keyframes navFadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes cursorFade{0%{opacity:0.8;transform:scale(1)}100%{opacity:0;transform:scale(0)}}
-@keyframes petalDrift{0%{transform:translateY(0) rotate(0deg);opacity:0}15%{opacity:0.5}85%{opacity:0.2}100%{transform:translateY(-200px) translateX(40px) rotate(180deg);opacity:0}}
-@keyframes envPulse{0%,100%{transform:scale(1);opacity:0.8}50%{transform:scale(1.08);opacity:1}}
-@keyframes envFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-@keyframes goldSheen{0%,100%{opacity:0}40%{opacity:0.6}60%{opacity:0.6}}
 @keyframes sheenSlide{0%{transform:translateX(-100%) skewX(-15deg)}100%{transform:translateX(300%) skewX(-15deg)}}
-@keyframes cardRise{0%{opacity:0;transform:translateY(120px) scale(0.96)}100%{opacity:1;transform:translateY(-140px) scale(1)}}
+@keyframes scratchReveal{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+@keyframes petalPop{0%{opacity:0;transform:translate(-50%,-50%) scale(0) rotate(0deg)}40%{opacity:0.9}100%{opacity:0;transform:translate(var(--px),var(--py)) scale(0.4) rotate(var(--pr))}}
+@keyframes sealGlow{0%,100%{box-shadow:0 0 0 0 rgba(201,169,110,0)}50%{box-shadow:0 0 40px 12px rgba(201,169,110,0.25)}}
+@keyframes cardRiseUp{0%{opacity:0;transform:translateY(60px) scale(0.97)}100%{opacity:1;transform:translateY(-80px) scale(1)}}
+@keyframes flapOpen{0%{transform:rotateX(0deg);transform-origin:top center}100%{transform:rotateX(-175deg);transform-origin:top center}}
+@keyframes envFadeOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(0.92)}}
 @keyframes bgReveal{from{opacity:0}to{opacity:1}}
-@keyframes sealGlow{0%,100%{box-shadow:0 0 0 0 rgba(201,169,110,0)}50%{box-shadow:0 0 28px 8px rgba(201,169,110,0.25)}}
-@keyframes textReveal{0%{opacity:0;letter-spacing:8px}100%{opacity:1;letter-spacing:normal}}
-@keyframes borderTrace{from{stroke-dashoffset:1000}to{stroke-dashoffset:0}}
+
 .nav-logo{white-space:nowrap;}
-
 .gold-shimmer{background:linear-gradient(90deg,#8B6914 0%,#C9A96E 25%,#F5E4B0 50%,#C9A96E 75%,#8B6914 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 5s linear infinite;}
-
 .grain::after{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");background-size:256px;pointer-events:none;z-index:1;opacity:0.3;}
-
 .polaroid{background:#F5EDD8;padding:10px 10px 36px;box-shadow:0 8px 32px rgba(0,0,0,0.55);transition:transform 0.4s cubic-bezier(0.23,1,0.32,1),box-shadow 0.4s ease;cursor:pointer;}
 .polaroid:hover{transform:rotate(0deg) scale(1.06)!important;box-shadow:0 24px 64px rgba(0,0,0,0.7)!important;z-index:10;position:relative;}
 .polaroid-caption{font-family:'Cormorant Garamond',serif;font-style:italic;color:#3a2f1e;font-size:15px;text-align:center;margin-top:8px;line-height:1.3;font-weight:400;}
-
 .event-card{transition:transform 0.3s ease,border-color 0.3s ease;border:1px solid #2A2621;}
 .event-card:hover{transform:translateX(6px);border-color:#C9A96E50!important;}
-
 .rsvp-input{background:#111!important;border:1px solid #2A2621!important;color:#fff!important;transition:border-color 0.3s,box-shadow 0.3s!important;}
 .rsvp-input:focus{border-color:#C9A96E!important;box-shadow:0 0 0 3px rgba(201,169,110,0.1)!important;outline:none!important;}
 .rsvp-input::placeholder{color:#444!important;}
 .rsvp-option{transition:all 0.25s ease;border:1px solid #2A2621;cursor:pointer;}
 .rsvp-option:hover{border-color:#C9A96E60!important;background:#1A1612!important;}
 .rsvp-option.selected{border-color:#C9A96E!important;background:#1A1612!important;}
-
 .music-btn{position:fixed;bottom:28px;right:24px;z-index:998;width:44px;height:44px;border-radius:50%;background:rgba(201,169,110,0.1);border:1px solid rgba(201,169,110,0.3);backdrop-filter:blur(12px);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s ease;}
 .music-btn:hover{background:rgba(201,169,110,0.2);}
-
 .map-frame{border:1px solid #2A2621;border-radius:16px;overflow:hidden;filter:grayscale(0.5) contrast(1.1);transition:filter 0.4s ease;}
 .map-frame:hover{filter:grayscale(0.1);}
-
 .nav-link{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#666;text-decoration:none;transition:color 0.3s ease;padding:4px 0;position:relative;}
 .nav-link::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1px;background:#C9A96E;transition:width 0.3s ease;}
 .nav-link:hover{color:#C9A96E;}
 .nav-link:hover::after,.nav-link.active::after{width:100%;}
 .nav-link.active{color:#C9A96E;}
-
-.scratch-canvas{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23C9A96E' opacity='0.6'/%3E%3C/svg%3E") 12 12,crosshair;}
-
+.envelope-body{perspective:1200px;}
+.flap-wrap{transform-style:preserve-3d;transform-origin:top center;}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;}}
 `;
 
@@ -148,36 +132,30 @@ function Mandala({ size=200, opacity=0.06 }) {
   );
 }
 
-// Delicate lotus petal background motif — replaces the orbiting planet rings
 function LotusBg({ opacity=0.04 }) {
   return (
     <svg width="420" height="420" viewBox="0 0 420 420" style={{opacity,pointerEvents:"none"}}>
       <g transform="translate(210,210)">
-        {/* outer ring petals */}
         {[0,40,80,120,160,200,240,280,320].map(a=>(
           <g key={a} transform={`rotate(${a})`}>
             <path d="M0,-160 C20,-130 20,-100 0,-80 C-20,-100 -20,-130 0,-160Z" fill="#C9A96E" opacity="0.6"/>
           </g>
         ))}
-        {/* mid ring petals */}
         {[20,60,100,140,180,220,260,300,340].map(a=>(
           <g key={a} transform={`rotate(${a})`}>
             <path d="M0,-105 C13,-85 13,-65 0,-50 C-13,-65 -13,-85 0,-105Z" fill="#C9A96E" opacity="0.5"/>
           </g>
         ))}
-        {/* inner petals */}
         {[0,45,90,135,180,225,270,315].map(a=>(
           <g key={a} transform={`rotate(${a})`}>
             <path d="M0,-55 C8,-42 8,-30 0,-22 C-8,-30 -8,-42 0,-55Z" fill="#C9A96E" opacity="0.7"/>
           </g>
         ))}
-        {/* decorative rings */}
         <circle cx="0" cy="0" r="170" fill="none" stroke="#C9A96E" strokeWidth="0.4" opacity="0.4"/>
         <circle cx="0" cy="0" r="112" fill="none" stroke="#C9A96E" strokeWidth="0.3" opacity="0.4"/>
         <circle cx="0" cy="0" r="60" fill="none" stroke="#C9A96E" strokeWidth="0.5" opacity="0.5"/>
         <circle cx="0" cy="0" r="20" fill="none" stroke="#C9A96E" strokeWidth="0.8" opacity="0.6"/>
         <circle cx="0" cy="0" r="5" fill="#C9A96E" opacity="0.8"/>
-        {/* dot accents at petal tips */}
         {[0,40,80,120,160,200,240,280,320].map(a=>(
           <circle key={a} cx={Math.cos((a-90)*Math.PI/180)*163} cy={Math.sin((a-90)*Math.PI/180)*163} r="1.5" fill="#C9A96E" opacity="0.8"/>
         ))}
@@ -186,7 +164,6 @@ function LotusBg({ opacity=0.04 }) {
   );
 }
 
-// Gold line-art ceremony icons
 function CeremonyIcon({ type, size=56 }) {
   const s = { fill:"none", stroke:"#C9A96E", strokeWidth:"1.2", strokeLinecap:"round", strokeLinejoin:"round" };
   const icons = {
@@ -284,7 +261,6 @@ function Eyebrow({ children, visible, delay=0 }) {
   );
 }
 
-// Floating gold particles
 function Particles({ count=14 }) {
   const ps = useRef(Array.from({length:count},(_,i)=>({id:i,left:Math.random()*100,delay:Math.random()*10,duration:7+Math.random()*9,size:1+Math.random()*1.5}))).current;
   return (
@@ -321,16 +297,8 @@ function CursorTrail() {
 // ─── NAV ──────────────────────────────────────────────────────────────────────
 function Nav() {
   const [scrolled,setScrolled]=useState(false);
-  const [active,setActive]=useState("");
   useEffect(()=>{
-    const onScroll=()=>{
-      setScrolled(window.scrollY>60);
-      const sections=["events","venue","gallery","rsvp"];
-      for(let i=sections.length-1;i>=0;i--){
-        const el=document.getElementById(sections[i]);
-        if(el&&window.scrollY>=el.offsetTop-120){setActive(sections[i]);break;}
-      }
-    };
+    const onScroll=()=>setScrolled(window.scrollY>60);
     window.addEventListener("scroll",onScroll);
     return ()=>window.removeEventListener("scroll",onScroll);
   },[]);
@@ -346,9 +314,9 @@ function Nav() {
       animation:"navFadeIn 1s 1s ease both",
     }}>
       <div className="nav-logo" style={{display:"flex",alignItems:"center",gap:8}}>
-  <Mandala size={18} opacity={0.7}/>
-  <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,fontWeight:400,color:T.gold,fontStyle:"italic"}}>M & S</span>
-</div>
+        <Mandala size={18} opacity={0.7}/>
+        <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,fontWeight:400,color:T.gold,fontStyle:"italic"}}>M & S</span>
+      </div>
     </nav>
   );
 }
@@ -376,295 +344,393 @@ function MusicPlayer() {
 }
 
 // ─── WAX SEAL ─────────────────────────────────────────────────────────────────
-// ─── WAX SEAL (rich gold, large) ──────────────────────────────────────────────
-function WaxSeal({ size=100, cracking=false }) {
+function WaxSeal({ size=80 }) {
   return (
-    <div style={{
-      width:size, height:size, display:"inline-block",
-      animation: cracking ? "sealCrack 1s ease forwards" : "waxWobble 5s ease-in-out infinite",
-      filter:"drop-shadow(0 4px 18px rgba(201,169,110,0.45))",
-    }}>
-      <svg width={size} height={size} viewBox="0 0 100 100">
-        <defs>
-          <radialGradient id="sealMain" cx="35%" cy="28%">
-            <stop offset="0%"   stopColor="#FDE68A"/>
-            <stop offset="30%"  stopColor="#D4A843"/>
-            <stop offset="70%"  stopColor="#A0742A"/>
-            <stop offset="100%" stopColor="#5C3D0A"/>
-          </radialGradient>
-          <radialGradient id="sealSheen" cx="28%" cy="22%">
-            <stop offset="0%"   stopColor="#FFFDE7" stopOpacity="0.75"/>
-            <stop offset="60%"  stopColor="#FDE68A" stopOpacity="0.1"/>
-            <stop offset="100%" stopColor="#C9A96E" stopOpacity="0"/>
-          </radialGradient>
-        </defs>
-        {/* Shadow base */}
-        <circle cx="50" cy="53" r="44" fill="rgba(0,0,0,0.25)"/>
-        {/* Main gold circle */}
-        <circle cx="50" cy="50" r="44" fill="url(#sealMain)"/>
-        {/* Specular sheen */}
-        <circle cx="50" cy="50" r="44" fill="url(#sealSheen)"/>
-        {/* Serrated outer edge — 24 teeth */}
-        {Array.from({length:24},(_,i)=>{
-          const a1=(i/24)*Math.PI*2; const a2=((i+0.5)/24)*Math.PI*2;
-          const r1=44, r2=40;
-          return <polygon key={i} points={`
-            ${50+r1*Math.cos(a1)},${50+r1*Math.sin(a1)}
-            ${50+r2*Math.cos(a2)},${50+r2*Math.sin(a2)}
-            ${50+r1*Math.cos(a1+Math.PI/24)},${50+r1*Math.sin(a1+Math.PI/24)}
-          `} fill="#B8860B" opacity="0.6"/>;
-        })}
-        {/* Decorative rings */}
-        <circle cx="50" cy="50" r="38" fill="none" stroke="#FDE68A" strokeWidth="0.7" opacity="0.55"/>
-        <circle cx="50" cy="50" r="32" fill="none" stroke="#FDE68A" strokeWidth="0.5" opacity="0.4"/>
-        <circle cx="50" cy="50" r="26" fill="none" stroke="#FDE68A" strokeWidth="0.4" opacity="0.35"/>
-        {/* 8-petal flower detail */}
-        {[0,45,90,135,180,225,270,315].map(a=>{
-          const rad=a*Math.PI/180;
-          return <ellipse key={a} cx={50+29*Math.cos(rad)} cy={50+29*Math.sin(rad)}
-            rx="3.5" ry="5.5" transform={`rotate(${a},${50+29*Math.cos(rad)},${50+29*Math.sin(rad)})`}
-            fill="#FDE68A" opacity="0.3"/>;
-        })}
-        {/* Monogram */}
-        <text x="50" y="54" textAnchor="middle" fontSize="18"
-          fill="#3A1F00" fontFamily="'Cormorant Garamond',serif"
-          fontStyle="italic" fontWeight="600" letterSpacing="1.5">M &amp; S</text>
-      </svg>
+    <svg width={size} height={size} viewBox="0 0 100 100">
+      <defs>
+        <radialGradient id="sealMain" cx="35%" cy="28%">
+          <stop offset="0%"   stopColor="#FDE68A"/>
+          <stop offset="30%"  stopColor="#D4A843"/>
+          <stop offset="70%"  stopColor="#A0742A"/>
+          <stop offset="100%" stopColor="#5C3D0A"/>
+        </radialGradient>
+        <radialGradient id="sealSheen" cx="28%" cy="22%">
+          <stop offset="0%"   stopColor="#FFFDE7" stopOpacity="0.75"/>
+          <stop offset="60%"  stopColor="#FDE68A" stopOpacity="0.1"/>
+          <stop offset="100%" stopColor="#C9A96E" stopOpacity="0"/>
+        </radialGradient>
+      </defs>
+      <circle cx="50" cy="53" r="44" fill="rgba(0,0,0,0.3)"/>
+      <circle cx="50" cy="50" r="44" fill="url(#sealMain)"/>
+      <circle cx="50" cy="50" r="44" fill="url(#sealSheen)"/>
+      {Array.from({length:24},(_,i)=>{
+        const a1=(i/24)*Math.PI*2; const a2=((i+0.5)/24)*Math.PI*2;
+        return <polygon key={i} points={`
+          ${50+44*Math.cos(a1)},${50+44*Math.sin(a1)}
+          ${50+40*Math.cos(a2)},${50+40*Math.sin(a2)}
+          ${50+44*Math.cos(a1+Math.PI/24)},${50+44*Math.sin(a1+Math.PI/24)}
+        `} fill="#B8860B" opacity="0.6"/>;
+      })}
+      <circle cx="50" cy="50" r="38" fill="none" stroke="#FDE68A" strokeWidth="0.7" opacity="0.55"/>
+      <circle cx="50" cy="50" r="32" fill="none" stroke="#FDE68A" strokeWidth="0.5" opacity="0.4"/>
+      {[0,45,90,135,180,225,270,315].map(a=>{
+        const rad=a*Math.PI/180;
+        return <ellipse key={a} cx={50+29*Math.cos(rad)} cy={50+29*Math.sin(rad)}
+          rx="3.5" ry="5.5" transform={`rotate(${a},${50+29*Math.cos(rad)},${50+29*Math.sin(rad)})`}
+          fill="#FDE68A" opacity="0.3"/>;
+      })}
+      <text x="50" y="54" textAnchor="middle" fontSize="18"
+        fill="#3A1F00" fontFamily="'Cormorant Garamond',serif"
+        fontStyle="italic" fontWeight="600" letterSpacing="1.5">M &amp; S</text>
+    </svg>
+  );
+}
+
+// ─── PETAL BURST (decorative, fires on seal crack) ────────────────────────────
+function PetalBurst({ active }) {
+  const petals = useRef(Array.from({length:16},(_,i)=>({
+    id:i,
+    angle: (i/16)*360,
+    dist: 60+Math.random()*80,
+    rotate: Math.random()*360,
+    size: 4+Math.random()*6,
+    delay: Math.random()*0.3,
+  }))).current;
+
+  if(!active) return null;
+  return (
+    <div style={{position:"absolute",top:"50%",left:"50%",width:0,height:0,pointerEvents:"none",zIndex:10}}>
+      {petals.map(p=>{
+        const rad = p.angle * Math.PI/180;
+        const px = Math.cos(rad)*p.dist + "px";
+        const py = Math.sin(rad)*p.dist + "px";
+        return (
+          <div key={p.id} style={{
+            position:"absolute",
+            width:p.size, height:p.size*1.6,
+            borderRadius:"50% 50% 50% 50% / 60% 60% 40% 40%",
+            background:`linear-gradient(135deg,#C9A96E,#FDE68A)`,
+            transform:"translate(-50%,-50%)",
+            "--px":px,"--py":py,"--pr":`${p.rotate}deg`,
+            animation:`petalPop 1.2s ${p.delay}s ease-out forwards`,
+          }}/>
+        );
+      })}
     </div>
   );
 }
 
-// ─── OPENING ──────────────────────────────────────────────────────────────────
+// ─── DARK ENVELOPE OPENING SEQUENCE ──────────────────────────────────────────
 function OpeningSequence({ onComplete }) {
-  const [phase, setPhase] = useState("idle");
-  const [cracked, setCracked] = useState(false);
+  const [phase, setPhase] = useState("idle");   // idle → hover → opening → card → done
+  const [tilt, setTilt] = useState({x:0,y:0});
+  const envRef = useRef(null);
 
-  const handle = useCallback(() => {
-    if (phase !== "idle") return;
-    setCracked(true);
-    setPhase("cracking");
-    setTimeout(() => setPhase("reveal"), 1200);
-    setTimeout(() => { setPhase("done"); setTimeout(onComplete, 800); }, 3200);
+  // Subtle parallax tilt on mouse move
+  const handleMouseMove = useCallback((e) => {
+    if(phase !== "idle") return;
+    const rect = envRef.current?.getBoundingClientRect();
+    if(!rect) return;
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/2;
+    const dx = (e.clientX - cx) / (window.innerWidth/2);
+    const dy = (e.clientY - cy) / (window.innerHeight/2);
+    setTilt({x: dy*6, y: -dx*6});
+  }, [phase]);
+
+  const handleTap = useCallback(() => {
+    if(phase !== "idle") return;
+    setPhase("opening");
+    setTimeout(()=>setPhase("card"), 1100);
+    setTimeout(()=>{ setPhase("done"); setTimeout(onComplete, 700); }, 3400);
   }, [phase, onComplete]);
 
   return (
-    <div onClick={handle} style={{
-      position:"fixed", inset:0, zIndex:9999,
-      display:"flex", flexDirection:"column",
-      alignItems:"center", justifyContent:"center",
-      cursor: phase === "idle" ? "pointer" : "default",
-      opacity: phase === "done" ? 0 : 1,
-      transition: phase === "done" ? "opacity 0.8s ease" : "none",
-      overflow:"hidden",
-    }}>
-      {/* Background: hero photo blurred */}
+    <div
+      onClick={handleTap}
+      onMouseMove={handleMouseMove}
+      style={{
+        position:"fixed", inset:0, zIndex:9999,
+        display:"flex", flexDirection:"column",
+        alignItems:"center", justifyContent:"center",
+        cursor: phase==="idle" ? "pointer" : "default",
+        opacity: phase==="done" ? 0 : 1,
+        transition: phase==="done" ? "opacity 0.7s ease" : "none",
+        overflow:"hidden",
+      }}
+    >
+      {/* ── Deep black background with blurred hero ── */}
       <div style={{
         position:"absolute", inset:0,
         backgroundImage:`url(${PHOTO_HERO})`,
         backgroundSize:"cover", backgroundPosition:"center top",
-        filter:"blur(18px) brightness(0.28) saturate(0.6)",
-        transform:"scale(1.08)",
+        filter:"blur(24px) brightness(0.18) saturate(0.4)",
+        transform:"scale(1.1)",
       }}/>
-      {/* deep overlay */}
       <div style={{
         position:"absolute", inset:0,
-        background:"radial-gradient(ellipse 80% 70% at 50% 45%, rgba(20,12,4,0.55) 0%, rgba(4,3,2,0.88) 100%)",
+        background:"radial-gradient(ellipse 80% 70% at 50% 50%, rgba(12,8,4,0.4) 0%, rgba(4,3,2,0.96) 100%)",
       }}/>
 
-      <Particles count={20}/>
+      <Particles count={24}/>
 
-      {/* ── IDLE STATE ── */}
+      {/* ── Floating ambient mandala ── */}
+      <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",opacity:0.04,pointerEvents:"none",animation:"rotateSlow 120s linear infinite"}}>
+        <LotusBg opacity={1}/>
+      </div>
+
+      {/* ── IDLE: envelope + tap prompt ── */}
       {phase === "idle" && (
         <div style={{
           position:"relative", zIndex:2,
           display:"flex", flexDirection:"column",
           alignItems:"center", textAlign:"center",
-          animation:"fadeIn 1.8s ease both",
+          animation:"fadeIn 1.6s ease both",
         }}>
-          {/* Wax seal — large, centered, glowing */}
-          <div style={{
-            marginBottom:40,
-            animation:"waxWobble 5s ease-in-out infinite",
-            filter:"drop-shadow(0 0 32px rgba(201,169,110,0.5)) drop-shadow(0 0 8px rgba(201,169,110,0.3))",
-          }}>
-            <WaxSeal size={130} cracking={false}/>
+          {/* Envelope */}
+          <div
+            ref={envRef}
+            style={{
+              width:300, height:210,
+              position:"relative",
+              transform:`perspective(800px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+              transition:"transform 0.15s ease-out",
+              filter:"drop-shadow(0 24px 60px rgba(201,169,110,0.18)) drop-shadow(0 8px 20px rgba(0,0,0,0.8))",
+              animation:"waxWobble 6s ease-in-out infinite",
+            }}
+          >
+            <EnvelopeIdle/>
           </div>
 
-          {/* Names */}
-          <div style={{
-            fontFamily:"'Cormorant Garamond',serif",
-            fontSize:"clamp(28px,7vw,52px)",
-            fontWeight:400, fontStyle:"italic",
-            color:T.white, letterSpacing:3,
-            marginBottom:12,
-            textShadow:"0 2px 30px rgba(201,169,110,0.3)",
-          }}>
-            Manan &amp; Shrishti
-          </div>
-
-          <div style={{
-            display:"flex", alignItems:"center",
-            gap:14, margin:"0 auto 28px", maxWidth:260,
-          }}>
-            <div style={{flex:1,height:1,background:"linear-gradient(to right,transparent,#C9A96E60)"}}/>
-            <div style={{fontSize:10,color:T.gold}}>✦</div>
-            <div style={{flex:1,height:1,background:"linear-gradient(to left,transparent,#C9A96E60)"}}/>
-          </div>
-
-          <div style={{
-            fontSize:9, letterSpacing:5, color:T.gray2,
-            textTransform:"uppercase", marginBottom:52,
-            fontFamily:"Inter,sans-serif",
-          }}>
-            20 · 21 September 2026 · Karnal
-          </div>
-
-          {/* Tap prompt */}
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
-            <div style={{
-              width:1, height:36,
-              background:"linear-gradient(to bottom,transparent,#C9A96E60)",
-              animation:"floatY 2.5s ease-in-out infinite",
-            }}/>
-            <div style={{fontSize:8,letterSpacing:5,color:T.gray3,textTransform:"uppercase"}}>
-              tap to open
+          <div style={{marginTop:36,display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:15,color:T.gray1,letterSpacing:2}}>
+              a letter, sealed with love
             </div>
+            <div style={{width:1,height:32,background:"linear-gradient(to bottom,transparent,#C9A96E50)",marginTop:8,animation:"floatY 2.5s ease-in-out infinite"}}/>
+            <div style={{fontSize:8,letterSpacing:5,color:T.gray3,textTransform:"uppercase"}}>tap to open</div>
           </div>
         </div>
       )}
 
-      {/* ── CRACKING STATE ── */}
-      {phase === "cracking" && (
-        <div style={{
-          position:"relative", zIndex:2,
-          display:"flex", flexDirection:"column",
-          alignItems:"center", textAlign:"center",
-        }}>
+      {/* ── OPENING: flap animates open + petal burst ── */}
+      {phase === "opening" && (
+        <div style={{position:"relative",zIndex:2,display:"flex",flexDirection:"column",alignItems:"center"}}>
           <div style={{
-            animation:"sealCrack 1.2s ease forwards",
-            filter:"drop-shadow(0 0 40px rgba(201,169,110,0.7))",
+            width:300, height:210, position:"relative",
+            filter:"drop-shadow(0 24px 60px rgba(201,169,110,0.25))",
           }}>
-            <WaxSeal size={130} cracking={true}/>
+            <EnvelopeOpening/>
+            <PetalBurst active={true}/>
           </div>
         </div>
       )}
 
-      {/* ── REVEAL STATE — full invitation card ── */}
-      {(phase === "reveal" || phase === "done") && (
-        <div style={{
-          position:"relative", zIndex:2,
-          display:"flex", flexDirection:"column",
-          alignItems:"center", textAlign:"center",
-          animation:"scaleIn 0.9s cubic-bezier(0.16,1,0.3,1) both",
-          padding:"0 24px",
-          maxWidth:440, width:"100%",
-        }}>
-          {/* card */}
+      {/* ── CARD: invitation card slides up from envelope ── */}
+      {(phase === "card" || phase === "done") && (
+        <div style={{position:"relative",zIndex:2,display:"flex",flexDirection:"column",alignItems:"center",padding:"0 24px",maxWidth:420,width:"100%"}}>
+          {/* Envelope stays behind */}
           <div style={{
+            width:300, height:180, position:"relative",
+            filter:"drop-shadow(0 8px 30px rgba(0,0,0,0.9))",
+            flexShrink:0,
+          }}>
+            <EnvelopeOpen/>
+          </div>
+
+          {/* Card sliding up */}
+          <div style={{
+            width:"100%", maxWidth:360,
             background:"linear-gradient(160deg,#111008 0%,#0D0B05 100%)",
             border:"1px solid #C9A96E50",
             borderRadius:12,
-            padding:"44px 36px 40px",
-            width:"100%",
+            padding:"40px 32px 36px",
             position:"relative",
-            boxShadow:"0 0 0 1px #C9A96E20, 0 32px 80px rgba(0,0,0,0.9), inset 0 1px 0 rgba(201,169,110,0.15)",
+            boxShadow:"0 0 0 1px #C9A96E15, 0 -24px 80px rgba(201,169,110,0.08), 0 32px 80px rgba(0,0,0,0.9), inset 0 1px 0 rgba(201,169,110,0.12)",
+            animation:"cardRiseUp 0.9s cubic-bezier(0.16,1,0.3,1) both",
+            marginTop:-60,
+            zIndex:5,
           }}>
             {/* shimmer sweep */}
-            <div style={{
-              position:"absolute", inset:0, borderRadius:12, overflow:"hidden",
-              pointerEvents:"none",
-            }}>
-              <div style={{
-                position:"absolute", inset:0,
-                background:"linear-gradient(105deg,transparent 35%,rgba(201,169,110,0.08) 50%,transparent 65%)",
-                animation:"sheenSlide 2s 0.3s ease both",
-              }}/>
+            <div style={{position:"absolute",inset:0,borderRadius:12,overflow:"hidden",pointerEvents:"none"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(105deg,transparent 35%,rgba(201,169,110,0.06) 50%,transparent 65%)",animation:"sheenSlide 2s 0.3s ease both"}}/>
             </div>
-
-            {/* SVG filigree corners */}
-            <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",borderRadius:12}}
-              viewBox="0 0 360 240" preserveAspectRatio="none">
-              <path d="M20 8 L8 8 L8 20" fill="none" stroke="#C9A96E" strokeWidth="1" opacity="0.5"/>
-              <path d="M340 8 L352 8 L352 20" fill="none" stroke="#C9A96E" strokeWidth="1" opacity="0.5"/>
-              <path d="M20 232 L8 232 L8 220" fill="none" stroke="#C9A96E" strokeWidth="1" opacity="0.5"/>
-              <path d="M340 232 L352 232 L352 220" fill="none" stroke="#C9A96E" strokeWidth="1" opacity="0.5"/>
-              <circle cx="8" cy="8" r="2.5" fill="#C9A96E" opacity="0.4"/>
-              <circle cx="352" cy="8" r="2.5" fill="#C9A96E" opacity="0.4"/>
-              <circle cx="8" cy="232" r="2.5" fill="#C9A96E" opacity="0.4"/>
-              <circle cx="352" cy="232" r="2.5" fill="#C9A96E" opacity="0.4"/>
+            {/* corner filigree */}
+            <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",borderRadius:12}} viewBox="0 0 320 220" preserveAspectRatio="none">
+              <path d="M18 6 L6 6 L6 18" fill="none" stroke="#C9A96E" strokeWidth="1" opacity="0.45"/>
+              <path d="M302 6 L314 6 L314 18" fill="none" stroke="#C9A96E" strokeWidth="1" opacity="0.45"/>
+              <path d="M18 214 L6 214 L6 202" fill="none" stroke="#C9A96E" strokeWidth="1" opacity="0.45"/>
+              <path d="M302 214 L314 214 L314 202" fill="none" stroke="#C9A96E" strokeWidth="1" opacity="0.45"/>
             </svg>
 
-            {/* content */}
-            <div style={{position:"relative",zIndex:1}}>
-              <div style={{
-                fontSize:8,letterSpacing:6,color:T.gold,
-                textTransform:"uppercase",marginBottom:20,
-                fontFamily:"Inter,sans-serif",opacity:0.8,
-                animation:"fadeUp 0.7s 0.2s ease both",animationFillMode:"both",
-              }}>
+            <div style={{position:"relative",zIndex:1,textAlign:"center"}}>
+              <div style={{fontSize:8,letterSpacing:6,color:T.gold,textTransform:"uppercase",marginBottom:18,fontFamily:"Inter,sans-serif",opacity:0.8,animation:"fadeUp 0.6s 0.2s ease both",animationFillMode:"both"}}>
                 you are cordially invited
               </div>
-
-              <div style={{
-                marginBottom:16,
-                animation:"fadeIn 0.8s 0.3s ease both",animationFillMode:"both",
-              }}>
-                <Mandala size={48} opacity={0.5}/>
+              <div style={{marginBottom:14,animation:"fadeIn 0.7s 0.3s ease both",animationFillMode:"both"}}>
+                <Mandala size={42} opacity={0.5}/>
               </div>
-
-              <div style={{
-                fontFamily:"'Cormorant Garamond',serif",
-                fontSize:"clamp(28px,7vw,42px)",
-                fontWeight:400,color:T.white,
-                letterSpacing:1,lineHeight:1.05,
-                marginBottom:6,
-                animation:"fadeUp 0.8s 0.4s ease both",animationFillMode:"both",
-              }}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(26px,6vw,38px)",fontWeight:400,color:T.white,letterSpacing:1,lineHeight:1.05,marginBottom:6,animation:"fadeUp 0.7s 0.4s ease both",animationFillMode:"both"}}>
                 Manan &amp; Shrishti
               </div>
-
-              <div style={{
-                display:"flex",alignItems:"center",gap:12,
-                margin:"16px auto",maxWidth:200,
-                animation:"fadeIn 0.7s 0.6s ease both",animationFillMode:"both",
-              }}>
+              <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px auto",maxWidth:200,animation:"fadeIn 0.7s 0.6s ease both",animationFillMode:"both"}}>
                 <div style={{flex:1,height:"0.5px",background:"linear-gradient(to right,transparent,#C9A96E80)"}}/>
-                <svg width="10" height="10" viewBox="0 0 12 12">
-                  <path d="M6 0L7.2 4.8L12 6L7.2 7.2L6 12L4.8 7.2L0 6L4.8 4.8Z" fill="#C9A96E" opacity="0.9"/>
-                </svg>
+                <svg width="8" height="8" viewBox="0 0 12 12"><path d="M6 0L7.2 4.8L12 6L7.2 7.2L6 12L4.8 7.2L0 6L4.8 4.8Z" fill="#C9A96E" opacity="0.9"/></svg>
                 <div style={{flex:1,height:"0.5px",background:"linear-gradient(to left,transparent,#C9A96E80)"}}/>
               </div>
-
-              <div style={{
-                fontSize:10,letterSpacing:4,color:T.gray1,
-                textTransform:"uppercase",marginBottom:6,
-                fontFamily:"Inter,sans-serif",
-                animation:"fadeUp 0.7s 0.8s ease both",animationFillMode:"both",
-              }}>
+              <div style={{fontSize:10,letterSpacing:4,color:T.gray1,textTransform:"uppercase",marginBottom:5,fontFamily:"Inter,sans-serif",animation:"fadeUp 0.7s 0.8s ease both",animationFillMode:"both"}}>
                 20 · 21 September 2026
               </div>
-              <div style={{
-                fontFamily:"'Cormorant Garamond',serif",
-                fontStyle:"italic",fontSize:14,
-                color:T.gold,letterSpacing:1,
-                animation:"fadeUp 0.7s 1s ease both",animationFillMode:"both",
-              }}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:13,color:T.gold,letterSpacing:1,animation:"fadeUp 0.7s 1s ease both",animationFillMode:"both"}}>
                 Vivan Resort, Karnal
               </div>
             </div>
           </div>
 
-          <div style={{
-            marginTop:28,fontSize:9,
-            letterSpacing:4,color:T.gray3,
-            textTransform:"uppercase",
-            animation:"fadeIn 0.8s 1.4s ease both",animationFillMode:"both",
-          }}>
+          <div style={{marginTop:24,fontSize:9,letterSpacing:4,color:T.gray3,textTransform:"uppercase",animation:"fadeIn 0.8s 1.4s ease both",animationFillMode:"both"}}>
             tap anywhere to continue
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+// ─── ENVELOPE SVG COMPONENTS (dark / black theme) ────────────────────────────
+
+// Idle: closed envelope, wax seal on flap
+function EnvelopeIdle() {
+  return (
+    <svg width="300" height="210" viewBox="0 0 300 210">
+      <defs>
+        <linearGradient id="envBody" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stopColor="#1A1612"/>
+          <stop offset="100%" stopColor="#0D0B08"/>
+        </linearGradient>
+        <linearGradient id="envEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stopColor="#C9A96E" stopOpacity="0.6"/>
+          <stop offset="100%" stopColor="#8B6914" stopOpacity="0.3"/>
+        </linearGradient>
+        <linearGradient id="flapGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stopColor="#211C15"/>
+          <stop offset="100%" stopColor="#141008"/>
+        </linearGradient>
+      </defs>
+
+      {/* Envelope body */}
+      <rect x="4" y="60" width="292" height="146" rx="8" fill="url(#envBody)" stroke="url(#envEdge)" strokeWidth="1.2"/>
+
+      {/* Bottom fold lines (V shape) */}
+      <path d="M4 206 L150 130 L296 206" fill="none" stroke="#C9A96E" strokeWidth="0.6" opacity="0.25"/>
+
+      {/* Side triangle shading */}
+      <path d="M4 60 L4 206 L150 130 Z" fill="#0A0805" opacity="0.5"/>
+      <path d="M296 60 L296 206 L150 130 Z" fill="#0A0805" opacity="0.5"/>
+
+      {/* Closed flap (triangle pointing down) */}
+      <path d="M4 60 L150 148 L296 60 Z" fill="url(#flapGrad)" stroke="url(#envEdge)" strokeWidth="1"/>
+
+      {/* Gold border lines on flap */}
+      <path d="M4 60 L150 148 L296 60" fill="none" stroke="#C9A96E" strokeWidth="0.8" opacity="0.4"/>
+
+      {/* Delicate inner border */}
+      <rect x="10" y="66" width="280" height="132" rx="5" fill="none" stroke="#C9A96E" strokeWidth="0.4" strokeDasharray="4 4" opacity="0.2"/>
+
+      {/* Corner ornaments */}
+      {[[10,66],[280,66],[10,192],[280,192]].map(([x,y],i)=>(
+        <circle key={i} cx={x+(i%2===0?4:-4)} cy={y+(i<2?4:-4)} r="2" fill="#C9A96E" opacity="0.3"/>
+      ))}
+
+      {/* Wax seal centered on flap */}
+      <g transform="translate(110, 80)">
+        <WaxSeal size={80}/>
+      </g>
+
+      {/* Subtle text at bottom */}
+      <text x="150" y="195" textAnchor="middle" fontSize="8" fill="#C9A96E" fontFamily="'Cormorant Garamond',serif" fontStyle="italic" opacity="0.35" letterSpacing="3">
+        Manan &amp; Shrishti · 2026
+      </text>
+    </svg>
+  );
+}
+
+// Opening: flap animating open
+function EnvelopeOpening() {
+  return (
+    <svg width="300" height="210" viewBox="0 0 300 210" style={{overflow:"visible"}}>
+      <defs>
+        <linearGradient id="envBody2" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stopColor="#1A1612"/>
+          <stop offset="100%" stopColor="#0D0B08"/>
+        </linearGradient>
+        <linearGradient id="flapGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stopColor="#211C15"/>
+          <stop offset="100%" stopColor="#141008"/>
+        </linearGradient>
+        <linearGradient id="envEdge2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stopColor="#C9A96E" stopOpacity="0.6"/>
+          <stop offset="100%" stopColor="#8B6914" stopOpacity="0.3"/>
+        </linearGradient>
+      </defs>
+
+      {/* Body */}
+      <rect x="4" y="60" width="292" height="146" rx="8" fill="url(#envBody2)" stroke="url(#envEdge2)" strokeWidth="1.2"/>
+      <path d="M4 60 L4 206 L150 130 Z" fill="#0A0805" opacity="0.5"/>
+      <path d="M296 60 L296 206 L150 130 Z" fill="#0A0805" opacity="0.5"/>
+      <path d="M4 206 L150 130 L296 206" fill="none" stroke="#C9A96E" strokeWidth="0.6" opacity="0.25"/>
+
+      {/* Flap animating open — rotates around top edge */}
+      <g style={{transformOrigin:"150px 60px",animation:"flapOpen 0.9s 0.05s cubic-bezier(0.4,0,0.2,1) forwards"}}>
+        <path d="M4 60 L150 148 L296 60 Z" fill="url(#flapGrad2)" stroke="url(#envEdge2)" strokeWidth="1"/>
+        <path d="M4 60 L150 148 L296 60" fill="none" stroke="#C9A96E" strokeWidth="0.8" opacity="0.4"/>
+        {/* Broken seal fragments */}
+        <circle cx="150" cy="104" r="12" fill="#A0742A" opacity="0.6"/>
+        <circle cx="150" cy="104" r="8" fill="#D4A843" opacity="0.5"/>
+        <text x="150" y="108" textAnchor="middle" fontSize="8" fill="#3A1F00" fontFamily="serif" fontStyle="italic" fontWeight="600">M&S</text>
+      </g>
+
+      {/* Gold glow under open flap */}
+      <ellipse cx="150" cy="80" rx="60" ry="8" fill="#C9A96E" opacity="0.06"/>
+    </svg>
+  );
+}
+
+// Open: envelope with flap fully open, card peeking out
+function EnvelopeOpen() {
+  return (
+    <svg width="300" height="180" viewBox="0 0 300 180">
+      <defs>
+        <linearGradient id="envBody3" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stopColor="#1A1612"/>
+          <stop offset="100%" stopColor="#0D0B08"/>
+        </linearGradient>
+        <linearGradient id="envEdge3" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stopColor="#C9A96E" stopOpacity="0.5"/>
+          <stop offset="100%" stopColor="#8B6914" stopOpacity="0.25"/>
+        </linearGradient>
+        <linearGradient id="flapOpen3" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%"   stopColor="#211C15"/>
+          <stop offset="100%" stopColor="#161208"/>
+        </linearGradient>
+      </defs>
+
+      {/* Flap flipped back (shown behind body) */}
+      <path d="M4 30 L150 -30 L296 30" fill="url(#flapOpen3)" stroke="url(#envEdge3)" strokeWidth="1" opacity="0.8"/>
+
+      {/* Body */}
+      <rect x="4" y="30" width="292" height="146" rx="8" fill="url(#envBody3)" stroke="url(#envEdge3)" strokeWidth="1.2"/>
+      <path d="M4 30 L4 176 L150 100 Z" fill="#0A0805" opacity="0.4"/>
+      <path d="M296 30 L296 176 L150 100 Z" fill="#0A0805" opacity="0.4"/>
+      <path d="M4 176 L150 100 L296 176" fill="none" stroke="#C9A96E" strokeWidth="0.6" opacity="0.2"/>
+
+      {/* Inner envelope glow */}
+      <rect x="20" y="38" width="260" height="120" rx="4" fill="#C9A96E" opacity="0.03"/>
+      <rect x="20" y="38" width="260" height="120" rx="4" fill="none" stroke="#C9A96E" strokeWidth="0.4" opacity="0.15"/>
+
+      {/* Text at bottom */}
+      <text x="150" y="165" textAnchor="middle" fontSize="7" fill="#C9A96E" fontFamily="'Cormorant Garamond',serif" fontStyle="italic" opacity="0.3" letterSpacing="3">
+        Manan &amp; Shrishti · 2026
+      </text>
+    </svg>
   );
 }
 
@@ -685,12 +751,25 @@ function Hero() {
         <div style={{fontSize:10,letterSpacing:6,color:T.gold,textTransform:"uppercase",marginBottom:20,fontWeight:400,opacity:ready?1:0,animation:ready?"fadeUp 1s 0.1s ease both":"none"}}>
           We're getting married
         </div>
-        {/* FIXED hero: both names same font family, equal visual weight */}
-        <div style={{opacity:ready?1:0,animation:ready?"fadeUp 1.1s 0.35s ease both":"none",marginBottom:10,textAlign:"center"}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(64px,14vw,120px)",fontWeight:300,color:T.white,letterSpacing:-1,lineHeight:0.95}}>Manan</div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(18px,3vw,28px)",color:T.gold,letterSpacing:8,margin:"10px 0 6px",fontWeight:300,textTransform:"uppercase"}}>& Shrishti</div>
+
+        {/* ── FIX 1: both names on ONE line, same font, same size, same weight ── */}
+        <div style={{
+          fontFamily:"'Cormorant Garamond',serif",
+          fontSize:"clamp(40px,10vw,88px)",
+          fontWeight:300,
+          fontStyle:"italic",
+          color:T.white,
+          letterSpacing:2,
+          lineHeight:1,
+          marginBottom:10,
+          whiteSpace:"nowrap",
+          opacity:ready?1:0,
+          animation:ready?"fadeUp 1.1s 0.35s ease both":"none",
+        }}>
+          Manan &amp; Shrishti
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:16,margin:"20px 0",opacity:ready?1:0,animation:ready?"fadeUp 0.9s 0.6s ease both":"none"}}>
+
+        <div style={{display:"flex",alignItems:"center",gap:16,margin:"16px 0",opacity:ready?1:0,animation:ready?"fadeUp 0.9s 0.6s ease both":"none"}}>
           <div style={{height:1,width:40,background:"linear-gradient(to left,#C9A96E,transparent)"}}/>
           <div style={{fontSize:11,letterSpacing:4,color:T.gray1,textTransform:"uppercase"}}>September 20 · 21 · 2026 · Karnal</div>
           <div style={{height:1,width:40,background:"linear-gradient(to right,#C9A96E,transparent)"}}/>
@@ -876,7 +955,6 @@ function Venue() {
             </div>
           ))}
         </div>
-        {/* REMOVED: "80 rooms reserved" note */}
         <div style={{textAlign:"center",fontSize:13,color:T.gray2,lineHeight:2,opacity:visible?1:0,animation:visible?"fadeUp 0.9s 0.6s ease both":"none"}}>
           Outstation guests — let us know your accommodation needs in the RSVP and we'll take care of everything.
         </div>
@@ -929,18 +1007,13 @@ function ScratchCard() {
   const canvasRef=useRef(null);
   const [revealed,setRevealed]=useState(false);
   const [scratching,setScratching]=useState(false);
-
   useEffect(()=>{
     const canvas=canvasRef.current; if(!canvas) return;
     const ctx=canvas.getContext("2d");
     ctx.fillStyle="#1A1510";
     ctx.fillRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle="#C9A96E";
-    for(let i=0;i<canvas.width;i+=4){
-      for(let j=0;j<canvas.height;j+=4){
-        if(Math.random()>0.6) ctx.fillRect(i,j,2,2);
-      }
-    }
+    for(let i=0;i<canvas.width;i+=4){for(let j=0;j<canvas.height;j+=4){if(Math.random()>0.6) ctx.fillRect(i,j,2,2);}}
     ctx.fillStyle="rgba(180,130,50,0.9)";
     ctx.fillRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle="#C9A96E";
@@ -948,7 +1021,6 @@ function ScratchCard() {
     ctx.textAlign="center";
     ctx.fillText("✦  scratch to reveal  ✦",canvas.width/2,canvas.height/2);
   },[]);
-
   const scratch=(x,y)=>{
     const canvas=canvasRef.current; if(!canvas) return;
     const ctx=canvas.getContext("2d");
@@ -956,27 +1028,22 @@ function ScratchCard() {
     const cx=(x-rect.left)*(canvas.width/rect.width);
     const cy=(y-rect.top)*(canvas.height/rect.height);
     ctx.globalCompositeOperation="destination-out";
-    ctx.beginPath();
-    ctx.arc(cx,cy,24,0,Math.PI*2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(cx,cy,24,0,Math.PI*2); ctx.fill();
     const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
     let transparent=0;
-    for(let i=3;i<data.length;i+=4){ if(data[i]===0) transparent++; }
-    const pct=transparent/(canvas.width*canvas.height)*100;
-    if(pct>45&&!revealed) setRevealed(true);
+    for(let i=3;i<data.length;i+=4){if(data[i]===0) transparent++;}
+    if(transparent/(canvas.width*canvas.height)*100>45&&!revealed) setRevealed(true);
   };
-
   const handleMouseMove=(e)=>{ if(scratching) scratch(e.clientX,e.clientY); };
   const handleTouch=(e)=>{ e.preventDefault(); const t=e.touches[0]; scratch(t.clientX,t.clientY); };
-
   return (
     <div style={{position:"relative",width:280,height:120,margin:"0 auto",borderRadius:12,overflow:"hidden"}}>
       <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 20px",background:T.surface2}}>
         <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:22,color:T.gold,marginBottom:8,lineHeight:1.3}}>You just made our wedding more beautiful.</div>
         <div style={{fontSize:12,color:T.gray1,letterSpacing:1}}>See you in September ❤️</div>
       </div>
-      <canvas ref={canvasRef} width={560} height={240} className="scratch-canvas"
-        style={{position:"absolute",inset:0,width:"100%",height:"100%",borderRadius:12,opacity:revealed?0:1,transition:"opacity 0.5s ease 0.3s",touchAction:"none"}}
+      <canvas ref={canvasRef} width={560} height={240}
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",borderRadius:12,opacity:revealed?0:1,transition:"opacity 0.5s ease 0.3s",touchAction:"none",cursor:"crosshair"}}
         onMouseDown={()=>setScratching(true)} onMouseUp={()=>setScratching(false)} onMouseLeave={()=>setScratching(false)}
         onMouseMove={handleMouseMove} onTouchMove={handleTouch}/>
     </div>
@@ -984,6 +1051,9 @@ function ScratchCard() {
 }
 
 // ─── RSVP ─────────────────────────────────────────────────────────────────────
+// FIX 3: Removed "attending?" step entirely. 4 steps: You → Events → Stay → Message
+// FIX 4: attending column — send true always (or omit if column allows null)
+
 const EVENT_OPTIONS=[
   {label:"Haldi",icon:"🌿",sub:"Day 1 · 11 AM"},
   {label:"Ring Ceremony & Sangeet",icon:"💍",sub:"Day 1 · 7 PM"},
@@ -998,41 +1068,53 @@ const ACCOM_OPTIONS=[
   {label:"Double sharing",sub:"Sharing with someone"},
   {label:"Family room",sub:"Coming with family"},
 ];
-const STEP_LABELS=["You","Attending?","Events","Stay","Message"];
+const STEP_LABELS=["You","Events","Stay","Message"];
 
 function RSVP() {
   const [ref,visible]=useReveal(0.06);
   const [step,setStep]=useState(0);
   const [status,setStatus]=useState("idle");
-  const [form,setForm]=useState({name:"",phone:"",email:"",attending:"",events:[],guests:"1",accommodation:"",message:""});
+  const [form,setForm]=useState({name:"",phone:"",email:"",events:[],guests:"1",accommodation:"",message:""});
 
   const toggle=(label)=>setForm(f=>({...f,events:f.events.includes(label)?f.events.filter(e=>e!==label):[...f.events,label]}));
+
   const canNext=()=>{
     if(step===0) return form.name.trim().length>1&&form.phone.trim().length>6;
-    if(step===1) return form.attending!=="";
-    if(step===2) return form.attending==="no"||form.events.length>0;
+    if(step===1) return form.events.length>0;
     return true;
   };
+
   const next=()=>{
-    if(step===1&&form.attending==="no"){submit();return;}
-    if(step<4) setStep(s=>s+1); else submit();
+    if(step<3) setStep(s=>s+1);
+    else submit();
   };
+
   const submit=async()=>{
     setStatus("sending");
     try{
-      const {error}=await supabase.from("rsvps").insert([{
-        name:form.name.trim(),phone:form.phone.trim(),email:form.email.trim()||null,
-        attending:form.attending==="yes",events:form.events,guests:parseInt(form.guests),
-        accommodation:form.accommodation||null,message:form.message.trim()||null,
-        submitted_at:new Date().toISOString(),
+      const { error } = await supabase.from("rsvps").insert([{
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        email: form.email.trim() || null,
+        attending: true,
+        events: form.events,
+        guests: parseInt(form.guests),
+        accommodation: form.accommodation || null,
+        message: form.message.trim() || null,
+        submitted_at: new Date().toISOString(),
       }]);
       if(error) throw error;
       setStatus("done");
-    }catch(err){console.error(err);setStatus("error");}
+    }catch(err){
+      console.error("RSVP error:", err);
+      setStatus("error");
+    }
   };
 
   const inp={width:"100%",padding:"14px 16px",borderRadius:12,fontSize:15,fontFamily:"inherit"};
+
   const steps=[
+    // Step 0 — who are you
     <div key={0}>
       <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:34,color:T.gold,textAlign:"center",marginBottom:8}}>Let us know who's coming</div>
       <p style={{textAlign:"center",color:T.gray1,fontSize:14,lineHeight:1.8,marginBottom:28,fontWeight:300}}>We'd love to put your name on our list.</p>
@@ -1043,20 +1125,9 @@ function RSVP() {
         </div>
       ))}
     </div>,
-    <div key={1} style={{textAlign:"center"}}>
-      <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:34,color:T.gold,marginBottom:8}}>Will you be joining us?</div>
-      <p style={{color:T.gray1,fontSize:14,lineHeight:1.8,marginBottom:32,fontWeight:300}}>Either way, thank you for letting us know.</p>
-      <div style={{display:"flex",flexDirection:"column",gap:12,maxWidth:300,margin:"0 auto"}}>
-        {[{v:"yes",e:"❤️",l:"Absolutely, I'll be there"},{v:"no",e:"💔",l:"I'm so sorry, I can't make it"}].map(o=>(
-          <div key={o.v} className={`rsvp-option${form.attending===o.v?" selected":""}`} onClick={()=>setForm(f=>({...f,attending:o.v}))}
-            style={{padding:"18px 22px",borderRadius:14,background:form.attending===o.v?T.surface3:T.surface2,display:"flex",alignItems:"center",gap:14,textAlign:"left"}}>
-            <span style={{fontSize:22}}>{o.e}</span>
-            <div style={{fontSize:15,color:form.attending===o.v?T.white:T.gray1,fontWeight:form.attending===o.v?500:400}}>{o.l}</div>
-          </div>
-        ))}
-      </div>
-    </div>,
-    <div key={2}>
+
+    // Step 1 — which events
+    <div key={1}>
       <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:34,color:T.gold,textAlign:"center",marginBottom:8}}>Which events will you attend?</div>
       <p style={{textAlign:"center",color:T.gray1,fontSize:14,lineHeight:1.8,marginBottom:24,fontWeight:300}}>Select everything you're planning to join.</p>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -1078,8 +1149,9 @@ function RSVP() {
         })}
       </div>
     </div>,
-    <div key={3}>
-      {/* REMOVED "80 rooms reserved" line */}
+
+    // Step 2 — stay
+    <div key={2}>
       <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:34,color:T.gold,textAlign:"center",marginBottom:8}}>Your stay</div>
       <p style={{textAlign:"center",color:T.gray1,fontSize:14,lineHeight:1.8,marginBottom:24,fontWeight:300}}>Let us know and we'll make sure you're taken care of.</p>
       <div style={{marginBottom:24}}>
@@ -1101,7 +1173,9 @@ function RSVP() {
         </select>
       </div>
     </div>,
-    <div key={4} style={{textAlign:"center"}}>
+
+    // Step 3 — message
+    <div key={3} style={{textAlign:"center"}}>
       <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:34,color:T.gold,marginBottom:8}}>Anything else?</div>
       <p style={{color:T.gray1,fontSize:14,lineHeight:1.8,marginBottom:24,fontWeight:300}}>Dietary preferences, a message for us,<br/>something we should know.</p>
       <textarea className="rsvp-input" style={{...inp,resize:"none",minHeight:120,textAlign:"left"}} rows={5} placeholder="Write something warm… or anything useful 🙂" value={form.message} onChange={e=>setForm(f=>({...f,message:e.target.value}))}/>
@@ -1122,21 +1196,18 @@ function RSVP() {
           </p>
         </div>
 
-        {status==="done"?(
+        {status==="done" ? (
           <div style={{textAlign:"center",padding:"56px 32px",background:T.surface1,borderRadius:24,border:`1px solid ${T.borderG}`,animation:"scaleIn 0.7s ease both"}}>
             <div style={{fontSize:48,marginBottom:24,animation:"floatY2 3s ease-in-out infinite"}}>💌</div>
-            <h3 style={{fontSize:28,color:T.white,fontWeight:300,marginBottom:12}}>
-              {form.attending==="no"?"We'll miss you dearly.":"We can't wait to see you."}
-            </h3>
+            <h3 style={{fontSize:28,color:T.white,fontWeight:300,marginBottom:12}}>We can't wait to see you.</h3>
             <p style={{color:T.gray1,fontSize:14,lineHeight:2,fontWeight:300,marginBottom:32}}>
-              {form.attending==="no"
-                ?"Thank you for letting us know. You'll be in our hearts on the day."
-                :"Your RSVP is confirmed. We'll be in touch closer to the date. See you in Karnal. ✦"}
+              Your RSVP is confirmed. We'll be in touch closer to the date. See you in Karnal. ✦
             </p>
-            {form.attending==="yes"&&<ScratchCard/>}
+            <ScratchCard/>
           </div>
-        ):(
+        ) : (
           <div style={{background:T.surface1,borderRadius:24,padding:"40px 32px",border:`1px solid ${T.border}`,opacity:visible?1:0,animation:visible?"scaleIn 0.8s 0.3s ease both":"none"}}>
+            {/* Step progress */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:40}}>
               {STEP_LABELS.map((label,i)=>(
                 <div key={i} style={{display:"flex",alignItems:"center",gap:6}}>
@@ -1150,8 +1221,15 @@ function RSVP() {
                 </div>
               ))}
             </div>
+
             <div style={{minHeight:260}}>{steps[step]}</div>
-            {status==="error"&&<div style={{color:T.error,fontSize:13,textAlign:"center",marginTop:16}}>Something went wrong. Please try again.</div>}
+
+            {status==="error"&&(
+              <div style={{color:T.error,fontSize:13,textAlign:"center",marginTop:16}}>
+                Something went wrong — please try again or email us at mananshrishti@gmail.com
+              </div>
+            )}
+
             <div style={{display:"flex",gap:12,marginTop:32}}>
               {step>0&&(
                 <button onClick={()=>setStep(s=>s-1)} style={{flex:1,padding:"15px",background:"transparent",color:T.gray1,border:`1px solid ${T.border}`,borderRadius:14,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"inherit",letterSpacing:1,transition:"all 0.2s"}}>
@@ -1159,7 +1237,7 @@ function RSVP() {
                 </button>
               )}
               <button onClick={next} disabled={!canNext()||status==="sending"} style={{flex:2,padding:"15px",background:canNext()?T.gold:T.surface3,color:canNext()?T.black:T.gray2,border:"none",borderRadius:14,fontSize:13,fontWeight:700,cursor:canNext()?"pointer":"not-allowed",fontFamily:"inherit",letterSpacing:1.5,textTransform:"uppercase",transition:"all 0.25s"}}>
-                {status==="sending"?"Sending…":step===1&&form.attending==="no"?"Submit":step===4?"Confirm my RSVP":"Continue →"}
+                {status==="sending"?"Sending…":step===3?"Confirm my RSVP ✦":"Continue →"}
               </button>
             </div>
           </div>
