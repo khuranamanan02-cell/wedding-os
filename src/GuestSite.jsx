@@ -1083,7 +1083,7 @@ function RSVP() {
     if(step===1) return form.events.length>0;
     return true;
   };
-const submit=async()=>{
+    const submit=async()=>{
     setStatus("sending");
     try{
       const res = await fetch(
