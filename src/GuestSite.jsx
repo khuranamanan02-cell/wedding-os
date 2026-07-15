@@ -1,39 +1,42 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
-// ─── PHOTOS (unchanged) ───────────────────────────────────────────────────────
+// ─── PHOTOS ───────────────────────────────────────────────────────────────────
 const PHOTO_HERO   = "https://res.cloudinary.com/dmmstltmq/image/upload/f_auto,q_auto/_APY3628_7827505_a24xqj";
 const PHOTO_FUN    = "https://res.cloudinary.com/dmmstltmq/image/upload/f_auto,q_auto/_APY3742_8619132_jm4rla";
 const PHOTO_FORMAL = "https://res.cloudinary.com/dmmstltmq/image/upload/f_auto,q_auto/_APY3384_8869296_zgmdw5";
 const PHOTO_NEW1   = "https://res.cloudinary.com/dmmstltmq/image/upload/f_auto,q_auto/_APY3401_6103245_lfst7l";
-const PHOTO_NEW2   = "https://res.cloudinary.com/dmmstltmq/image/upload/f_auto,q_auto/1000652228_l6op6j";
+const SCRAP_01 = "https://res.cloudinary.com/dmmstltmq/image/upload/v1784060819/WhatsApp_Image_2026-07-15_at_1.02.02_AM_h2szzl.jpg";
+const SCRAP_02 = "https://res.cloudinary.com/dmmstltmq/image/upload/v1784060819/WhatsApp_Image_2026-07-15_at_12.57.15_AM_e0m0cl.jpg";
+const SCRAP_03 = "https://res.cloudinary.com/dmmstltmq/image/upload/v1784060820/WhatsApp_Image_2026-07-15_at_12.58.25_AM_obwcik.jpg";
+const SCRAP_04 = "https://res.cloudinary.com/dmmstltmq/image/upload/v1784060820/WhatsApp_Image_2026-07-15_at_12.57.14_AM_o08v2l.jpg";
+const SCRAP_05 = "https://res.cloudinary.com/dmmstltmq/image/upload/v1784060819/WhatsApp_Image_2026-07-15_at_1.02.03_AM_2_yuvmk5.jpg";
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
-// Palette: raw linen / pressed cotton-rag paper / antique copper / dried sage
 const T = {
-  // Paper tones — warm, not cream
-  paper:     "#F7F2EA",   // base — raw linen, not ivory
-  paperDeep: "#EEE7D9",   // section alternate
-  paperDark: "#E4D9C8",   // deepest parchment, borders
-  canvas:    "#FAF7F2",   // lightest surface
-
-  // Ink
-  ink:       "#2A2118",   // very dark warm brown, not black
-  inkMid:    "#5C4A36",   // mid warm brown
-  inkLight:  "#8C7660",   // light brown — body text
-  inkFaint:  "#B5A48C",   // very light — labels, captions
-
-  // Copper — the accent. Not gold, not terracotta. Antique copper.
-  copper:    "#9B5E3C",   // main accent
-  copperLight:"#C4896A",  // lighter copper
-  copperPale: "#E8CAB8",  // very pale copper tint
-
-  // Sage — the breath between copper
-  sage:      "#6B7F5E",   // muted botanical green
-  sagePale:  "#C8D4C0",   // very pale sage for tints
-
-  // Borders and dividers
-  rule:      "#D4C8B4",   // hairline rules
-  ruleFaint: "#E8DFCE",   // very faint — between sections
+  // Bases
+  parchment: "#FAF6EF",
+  parchmentDeep: "#F3EDE2",
+  ivory: "#FEF9F3",
+  blush: "#F5E6E0",
+  mist: "#EDF1EC",
+  // Accents
+  rose: "#B8746A",
+  roseDark: "#8B4F47",
+  roseLight: "#E8C4BC",
+  sage: "#7A9480",
+  sageDark: "#4D6B54",
+  sageLight: "#C8D9CA",
+  gold: "#B8955A",
+  goldLight: "#D4B483",
+  goldPale: "#EDD9B5",
+  // Text
+  ink: "#2C2420",
+  inkLight: "#5C4A44",
+  inkMuted: "#8A7570",
+  inkFaint: "#B5A8A4",
+  // Borders
+  border: "#DDD0C4",
+  borderLight: "#EDE4DA",
 };
 
 const WEDDING_DATE = new Date("2026-09-20T00:00:00");
@@ -41,654 +44,820 @@ const WEDDING_DATE = new Date("2026-09-20T00:00:00");
 // ─── HOOKS ────────────────────────────────────────────────────────────────────
 function useCountdown() {
   const calc = () => {
-    const diff = Math.max(0, WEDDING_DATE - new Date());
-    return {
-      days: Math.floor(diff / 86400000),
-      hours: Math.floor(diff % 86400000 / 3600000),
-      minutes: Math.floor(diff % 3600000 / 60000),
-      seconds: Math.floor(diff % 60000 / 1000),
-    };
+    const d = Math.max(0, WEDDING_DATE - new Date());
+    return { days:Math.floor(d/86400000), hours:Math.floor(d%86400000/3600000), minutes:Math.floor(d%3600000/60000), seconds:Math.floor(d%60000/1000) };
   };
-  const [t, setT] = useState(calc);
-  useEffect(() => { const id = setInterval(() => setT(calc()), 1000); return () => clearInterval(id); }, []);
+  const [t,setT] = useState(calc);
+  useEffect(()=>{ const id=setInterval(()=>setT(calc()),1000); return ()=>clearInterval(id); },[]);
   return t;
 }
 
-function useReveal(threshold = 0.1) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
-    }, { threshold });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
-  return [ref, visible];
+function useReveal(threshold=0.08) {
+  const ref=useRef(null); const [v,setV]=useState(false);
+  useEffect(()=>{
+    const o=new IntersectionObserver(([e])=>{if(e.isIntersecting){setV(true);o.disconnect();}},{threshold});
+    if(ref.current) o.observe(ref.current);
+    return ()=>o.disconnect();
+  },[]);
+  return [ref,v];
 }
 
-// ─── GLOBAL CSS ───────────────────────────────────────────────────────────────
+// ─── CSS ──────────────────────────────────────────────────────────────────────
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=DM+Sans:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap');
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html { scroll-behavior: smooth; }
-body { font-family: 'DM Sans', sans-serif; background: #F7F2EA; color: #2A2118; overflow-x: hidden; }
-::-webkit-scrollbar { width: 3px; }
-::-webkit-scrollbar-track { background: #EEE7D9; }
-::-webkit-scrollbar-thumb { background: #9B5E3C; border-radius: 2px; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;background:#FAF6EF;color:#2C2420;overflow-x:hidden;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:#F3EDE2;}
+::-webkit-scrollbar-thumb{background:#B8955A;border-radius:2px;}
 
-/* Paper grain — the secret ingredient. A CSS noise layer that makes flat colour feel physical. */
-.grain::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.028;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 200px 200px;
-  mix-blend-mode: multiply;
-  z-index: 1;
-}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.94)}to{opacity:1;transform:scale(1)}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes floatY2{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes slowZoom{from{transform:scale(1)}to{transform:scale(1.06)}}
+@keyframes petalDrift{0%{transform:translateY(0) translateX(0) rotate(0deg);opacity:0}15%{opacity:0.8}85%{opacity:0.3}100%{transform:translateY(-180px) translateX(30px) rotate(220deg);opacity:0}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes flapOpen{0%{transform:rotateX(0deg)}100%{transform:rotateX(-172deg)}}
+@keyframes cardRiseUp{0%{opacity:0;transform:translateY(56px) scale(0.97)}100%{opacity:1;transform:translateY(-70px) scale(1)}}
+@keyframes petalPop{0%{opacity:0;transform:translate(-50%,-50%) scale(0)}50%{opacity:1}100%{opacity:0;transform:translate(var(--px),var(--py)) scale(0.5) rotate(var(--pr))}}
+@keyframes waxFloat{0%,100%{transform:rotate(-1deg) scale(1)}50%{transform:rotate(1deg) scale(1.02)}}
+@keyframes navIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cursorFade{0%{opacity:0.6;transform:scale(1)}100%{opacity:0;transform:scale(0)}}
+@keyframes sheenSlide{0%{transform:translateX(-120%) skewX(-12deg)}100%{transform:translateX(320%) skewX(-12deg)}}
+@keyframes borderDraw{from{stroke-dashoffset:800}to{stroke-dashoffset:0}}
+@keyframes rotateSlow{to{transform:rotate(360deg)}}
 
-/* Typography helpers */
-.display { font-family: 'Playfair Display', serif; }
-.display-italic { font-family: 'Playfair Display', serif; font-style: italic; }
+/* Petal particles */
+.petal{position:absolute;pointer-events:none;border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;}
 
-/* Keyframes */
-@keyframes fadeUp   { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slowZoom { from { transform: scale(1); } to { transform: scale(1.06); } }
-@keyframes floatY   { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
-@keyframes floatY2  { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-@keyframes scaleIn  { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
-@keyframes drawLine { from { stroke-dashoffset: 400; } to { stroke-dashoffset: 0; } }
-@keyframes navSlide { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+/* Polaroid cards */
+.polaroid{background:#fff;padding:10px 10px 38px;box-shadow:0 4px 20px rgba(44,36,32,0.12),0 1px 4px rgba(44,36,32,0.08);transition:transform 0.4s cubic-bezier(0.23,1,0.32,1),box-shadow 0.4s ease;cursor:pointer;}
+.polaroid:hover{transform:rotate(0deg) scale(1.06)!important;box-shadow:0 16px 48px rgba(44,36,32,0.2)!important;z-index:10;position:relative;}
+.polaroid-caption{font-family:'Cormorant Garamond',serif;font-style:italic;color:#5C4A44;font-size:14px;text-align:center;margin-top:8px;line-height:1.4;font-weight:400;}
 
 /* Nav */
-.nav-link {
-  font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #8C7660;
-  text-decoration: none; transition: color 0.25s ease; font-family: 'DM Sans', sans-serif; font-weight: 500;
-}
-.nav-link:hover { color: #9B5E3C; }
+.nav-link{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8A7570;text-decoration:none;transition:color 0.3s ease;position:relative;}
+.nav-link::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:#B8746A;transition:width 0.3s ease;}
+.nav-link:hover,.nav-link.active{color:#B8746A;}
+.nav-link:hover::after,.nav-link.active::after{width:100%;}
 
-/* Hero photo zoom */
-.hero-img { animation: slowZoom 18s ease-in-out infinite alternate; }
-
-/* Ritual cards */
-.ritual-card {
-  transition: transform 0.35s ease, box-shadow 0.35s ease;
-  cursor: default;
-}
-.ritual-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 40px rgba(42, 33, 24, 0.09) !important;
-}
-
-/* Event card */
-.event-card { transition: box-shadow 0.3s ease; }
-.event-card:hover { box-shadow: 0 12px 32px rgba(42, 33, 24, 0.08) !important; }
+/* Event cards */
+.ev-card{transition:transform 0.28s ease,box-shadow 0.28s ease;}
+.ev-card:hover{transform:translateY(-3px);box-shadow:0 12px 36px rgba(44,36,32,0.1)!important;}
 
 /* RSVP inputs */
-.rsvp-input {
-  background: #FAF7F2 !important; border: 1.5px solid #D4C8B4 !important;
-  color: #2A2118 !important; transition: border-color 0.25s, box-shadow 0.25s !important;
-  font-family: 'DM Sans', sans-serif !important;
-}
-.rsvp-input:focus {
-  border-color: #9B5E3C !important;
-  box-shadow: 0 0 0 3px rgba(155, 94, 60, 0.1) !important;
-  outline: none !important;
-}
-.rsvp-input::placeholder { color: #B5A48C !important; }
+.rsvp-input{background:#fff!important;border:1.5px solid #DDD0C4!important;color:#2C2420!important;transition:border-color 0.25s,box-shadow 0.25s!important;font-family:'Inter',sans-serif!important;}
+.rsvp-input:focus{border-color:#B8746A!important;box-shadow:0 0 0 3px rgba(184,116,106,0.12)!important;outline:none!important;}
+.rsvp-input::placeholder{color:#B5A8A4!important;}
+.rsvp-option{transition:all 0.22s ease;border:1.5px solid #DDD0C4;cursor:pointer;background:#fff;}
+.rsvp-option:hover{border-color:#B8746A!important;background:#FDF5F3!important;}
+.rsvp-option.selected{border-color:#B8746A!important;background:#FDF5F3!important;}
 
-/* Check options */
-.check-option {
-  transition: all 0.22s ease; border: 1.5px solid #D4C8B4; cursor: pointer;
-  background: #FAF7F2;
-}
-.check-option:hover { border-color: #9B5E3C !important; background: #F7F0E8 !important; }
-.check-option.selected { border-color: #9B5E3C !important; background: #F7F0E8 !important; }
+/* Music */
+.music-btn{position:fixed;bottom:28px;right:24px;z-index:998;width:44px;height:44px;border-radius:50%;background:rgba(184,116,106,0.12);border:1px solid rgba(184,116,106,0.35);backdrop-filter:blur(12px);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s ease;}
+.music-btn:hover{background:rgba(184,116,106,0.22);}
 
-/* Photo cards */
-.photo-card { transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
-.photo-card:hover { transform: scale(1.03) rotate(0deg) !important; z-index: 5; position: relative; }
+/* Map */
+.map-frame{border:1px solid #DDD0C4;border-radius:16px;overflow:hidden;filter:sepia(0.15) saturate(0.9);}
 
-/* RSVP button */
-.rsvp-btn { transition: all 0.25s ease !important; }
-.rsvp-btn:hover:not(:disabled) {
-  background: #7A4428 !important;
-  box-shadow: 0 6px 20px rgba(155, 94, 60, 0.28) !important;
-  transform: translateY(-1px) !important;
-}
+/* Shimmer text */
+.gold-shimmer{background:linear-gradient(90deg,#8B6914 0%,#B8955A 30%,#D4B483 50%,#B8955A 70%,#8B6914 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 6s linear infinite;}
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
-}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;}}
 `;
 
-// ─── SVG ORNAMENTS ────────────────────────────────────────────────────────────
-
-// The signature element: a letterpress-style postmark circle
-// Used as section headers — rotated, imperfect, handcrafted feeling
-function Postmark({ label = "M & S", sub = "September 2026", size = 90 }) {
+// ─── BOTANICAL SVG FRAME ──────────────────────────────────────────────────────
+// A delicate botanical illustration frame — the signature element
+function BotanicalFrame({ width=320, height=420, opacity=1 }) {
+  const c = "#7A9480";
+  const r = "#B8746A";
   return (
-    <svg width={size} height={size} viewBox="0 0 90 90" style={{ display: "block" }}>
-      <defs>
-        <path id="circ-top" d="M 45,45 m -32,0 a 32,32 0 1,1 64,0" />
-        <path id="circ-bot" d="M 45,45 m -28,0 a 28,28 0 0,0 56,0" />
-      </defs>
-      {/* Outer rings — slightly imperfect stroke width mimics letterpress */}
-      <circle cx="45" cy="45" r="40" fill="none" stroke={T.copper} strokeWidth="1.2" opacity="0.6" />
-      <circle cx="45" cy="45" r="35" fill="none" stroke={T.copper} strokeWidth="0.5" opacity="0.4" />
-      {/* Curved top text */}
-      <text fontFamily="'DM Sans', sans-serif" fontSize="7.5" fill={T.copper} letterSpacing="3.5" textAnchor="middle" fontWeight="500">
-        <textPath href="#circ-top" startOffset="50%">{label.toUpperCase()}</textPath>
-      </text>
-      {/* Curved bottom text */}
-      <text fontFamily="'DM Sans', sans-serif" fontSize="6.5" fill={T.copper} letterSpacing="2.5" textAnchor="middle" fontWeight="400" opacity="0.8">
-        <textPath href="#circ-bot" startOffset="50%">{sub.toUpperCase()}</textPath>
-      </text>
-      {/* Centre cross-hatch */}
-      <line x1="36" y1="45" x2="54" y2="45" stroke={T.copper} strokeWidth="0.8" opacity="0.5" />
-      <line x1="45" y1="36" x2="45" y2="54" stroke={T.copper} strokeWidth="0.8" opacity="0.5" />
+    <svg width={width} height={height} viewBox="0 0 320 420" style={{opacity,pointerEvents:"none",flexShrink:0}}>
+      {/* Top left corner sprigs */}
+      <g opacity="0.85">
+        <path d="M20 20 Q40 60 30 100" fill="none" stroke={c} strokeWidth="1.2"/>
+        <path d="M30 100 Q50 80 60 50" fill="none" stroke={c} strokeWidth="0.8"/>
+        <ellipse cx="62" cy="44" rx="10" ry="6" transform="rotate(-30 62 44)" fill={c} opacity="0.5"/>
+        <path d="M30 70 Q10 65 8 45" fill="none" stroke={c} strokeWidth="0.8"/>
+        <ellipse cx="6" cy="40" rx="9" ry="5" transform="rotate(20 6 40)" fill={c} opacity="0.45"/>
+        <path d="M22 55 Q5 70 10 90" fill="none" stroke={c} strokeWidth="0.7"/>
+        <ellipse cx="10" cy="94" rx="7" ry="4" transform="rotate(40 10 94)" fill={c} opacity="0.4"/>
+        {/* Rose bud top-left */}
+        <circle cx="20" cy="18" r="6" fill={r} opacity="0.7"/>
+        <path d="M14 18 Q20 10 26 18" fill={r} opacity="0.5"/>
+        <path d="M16 20 Q20 14 24 20" fill="#EDD9B5" opacity="0.6"/>
+      </g>
+
+      {/* Top right corner */}
+      <g opacity="0.85" transform="scale(-1,1) translate(-320,0)">
+        <path d="M20 20 Q40 60 30 100" fill="none" stroke={c} strokeWidth="1.2"/>
+        <path d="M30 100 Q50 80 60 50" fill="none" stroke={c} strokeWidth="0.8"/>
+        <ellipse cx="62" cy="44" rx="10" ry="6" transform="rotate(-30 62 44)" fill={c} opacity="0.5"/>
+        <path d="M30 70 Q10 65 8 45" fill="none" stroke={c} strokeWidth="0.8"/>
+        <ellipse cx="6" cy="40" rx="9" ry="5" transform="rotate(20 6 40)" fill={c} opacity="0.45"/>
+        <path d="M22 55 Q5 70 10 90" fill="none" stroke={c} strokeWidth="0.7"/>
+        <ellipse cx="10" cy="94" rx="7" ry="4" transform="rotate(40 10 94)" fill={c} opacity="0.4"/>
+        <circle cx="20" cy="18" r="6" fill={r} opacity="0.7"/>
+        <path d="M14 18 Q20 10 26 18" fill={r} opacity="0.5"/>
+        <path d="M16 20 Q20 14 24 20" fill="#EDD9B5" opacity="0.6"/>
+      </g>
+
+      {/* Bottom left */}
+      <g opacity="0.85" transform="scale(1,-1) translate(0,-420)">
+        <path d="M20 20 Q40 60 30 100" fill="none" stroke={c} strokeWidth="1.2"/>
+        <path d="M30 100 Q50 80 60 50" fill="none" stroke={c} strokeWidth="0.8"/>
+        <ellipse cx="62" cy="44" rx="10" ry="6" transform="rotate(-30 62 44)" fill={c} opacity="0.5"/>
+        <path d="M30 70 Q10 65 8 45" fill="none" stroke={c} strokeWidth="0.8"/>
+        <ellipse cx="6" cy="40" rx="9" ry="5" transform="rotate(20 6 40)" fill={c} opacity="0.45"/>
+        <circle cx="20" cy="18" r="5" fill={r} opacity="0.6"/>
+      </g>
+
+      {/* Bottom right */}
+      <g opacity="0.85" transform="scale(-1,-1) translate(-320,-420)">
+        <path d="M20 20 Q40 60 30 100" fill="none" stroke={c} strokeWidth="1.2"/>
+        <path d="M30 100 Q50 80 60 50" fill="none" stroke={c} strokeWidth="0.8"/>
+        <ellipse cx="62" cy="44" rx="10" ry="6" transform="rotate(-30 62 44)" fill={c} opacity="0.5"/>
+        <path d="M30 70 Q10 65 8 45" fill="none" stroke={c} strokeWidth="0.8"/>
+        <ellipse cx="6" cy="40" rx="9" ry="5" transform="rotate(20 6 40)" fill={c} opacity="0.45"/>
+        <circle cx="20" cy="18" r="5" fill={r} opacity="0.6"/>
+      </g>
+
+      {/* Delicate border lines */}
+      <rect x="32" y="32" width="256" height="356" rx="2" fill="none" stroke={c} strokeWidth="0.6" opacity="0.4"
+        strokeDasharray="6 4"/>
+      <rect x="26" y="26" width="268" height="368" rx="3" fill="none" stroke={c} strokeWidth="0.4" opacity="0.25"/>
     </svg>
   );
 }
 
-// Thin ruling lines — like the printed lines inside a fine envelope
-function RulingLines({ width = 300, count = 6, opacity = 0.3 }) {
+// Small botanical sprig for section dividers
+function Sprig({ flip=false, opacity=0.6 }) {
   return (
-    <svg width={width} height={count * 14} viewBox={`0 0 ${width} ${count * 14}`} style={{ display: "block" }}>
-      {Array.from({ length: count }, (_, i) => (
-        <line key={i} x1="0" y1={i * 14 + 7} x2={width} y2={i * 14 + 7}
-          stroke={T.rule} strokeWidth="0.6" opacity={opacity} />
+    <svg width="120" height="32" viewBox="0 0 120 32" style={{opacity,transform:flip?"scaleX(-1)":"none"}}>
+      <path d="M10 16 Q40 10 70 16 Q90 20 110 14" fill="none" stroke="#7A9480" strokeWidth="1"/>
+      {[20,35,50,65,80].map((x,i)=>(
+        <ellipse key={i} cx={x} cy={16-(i%2===0?4:3)} rx="6" ry="3.5"
+          transform={`rotate(${i%2===0?-20:20} ${x} ${16-(i%2===0?4:3)})`}
+          fill="#7A9480" opacity={0.5+i*0.06}/>
       ))}
     </svg>
   );
 }
 
-// Botanical sprig — just a single stem with 3 leaves. Simple.
-function Sprig({ scale = 1, flip = false, opacity = 0.5 }) {
+// Rose bloom for section headers
+function RoseBloom({ size=28, opacity=0.7 }) {
   return (
-    <svg
-      width={80 * scale} height={40 * scale}
-      viewBox="0 0 80 40"
-      style={{ opacity, transform: flip ? "scaleX(-1)" : "none", display: "block" }}
-    >
-      <path d="M10 35 Q40 28 70 30" fill="none" stroke={T.sage} strokeWidth="1" />
-      <path d="M22 30 Q18 20 26 18" fill="none" stroke={T.sage} strokeWidth="0.8" />
-      <ellipse cx="26" cy="17" rx="5" ry="3.5" transform="rotate(-25 26 17)" fill={T.sage} opacity="0.55" />
-      <path d="M38 28 Q36 16 44 15" fill="none" stroke={T.sage} strokeWidth="0.8" />
-      <ellipse cx="44" cy="14" rx="5.5" ry="3.5" transform="rotate(-15 44 14)" fill={T.sage} opacity="0.5" />
-      <path d="M54 28 Q55 18 62 20" fill="none" stroke={T.sage} strokeWidth="0.8" />
-      <ellipse cx="63" cy="20" rx="5" ry="3.2" transform="rotate(20 63 20)" fill={T.sage} opacity="0.45" />
+    <svg width={size} height={size} viewBox="0 0 28 28" style={{opacity}}>
+      <circle cx="14" cy="14" r="4" fill="#B8746A"/>
+      {[0,45,90,135,180,225,270,315].map(a=>{
+        const r=a*Math.PI/180;
+        return <ellipse key={a} cx={14+8*Math.cos(r)} cy={14+8*Math.sin(r)}
+          rx="5" ry="3.5" transform={`rotate(${a} ${14+8*Math.cos(r)} ${14+8*Math.sin(r)})`}
+          fill="#C9897A" opacity="0.75"/>;
+      })}
+      <circle cx="14" cy="14" r="3" fill="#D4B483" opacity="0.8"/>
     </svg>
   );
 }
 
-// Thin horizontal rule with centre ornament
-function Divider({ my = 0, ornament = "✦" }) {
+// ─── FLOATING PETALS ──────────────────────────────────────────────────────────
+function Petals({ count=12 }) {
+  const ps = useRef(Array.from({length:count},(_,i)=>({
+    id:i,
+    left:5+Math.random()*90,
+    delay:Math.random()*12,
+    duration:8+Math.random()*10,
+    size:4+Math.random()*6,
+    hue: Math.random()>0.5 ? "#E8C4BC" : "#C8D9CA",
+  }))).current;
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 14, margin: `${my}px 0` }}>
-      <div style={{ flex: 1, height: "0.75px", background: `linear-gradient(to right, transparent, ${T.rule})` }} />
-      <span style={{ fontSize: 10, color: T.copperLight, letterSpacing: 2 }}>{ornament}</span>
-      <div style={{ flex: 1, height: "0.75px", background: `linear-gradient(to left, transparent, ${T.rule})` }} />
+    <div style={{position:"absolute",inset:0,overflow:"hidden",pointerEvents:"none"}}>
+      {ps.map(p=>(
+        <div key={p.id} className="petal" style={{
+          position:"absolute",
+          left:`${p.left}%`,bottom:"-5%",
+          width:p.size,height:p.size*1.5,
+          background:p.hue,
+          animation:`petalDrift ${p.duration}s ${p.delay}s ease-in-out infinite`,
+        }}/>
+      ))}
     </div>
   );
 }
 
-// Section label — small caps, copper, constrained
-function Eyebrow({ children, visible, delay = 0, center = true }) {
-  return (
-    <div style={{
-      fontSize: 9, letterSpacing: 5, textTransform: "uppercase", color: T.copper,
-      marginBottom: 14, fontWeight: 500, fontFamily: "'DM Sans', sans-serif",
-      textAlign: center ? "center" : "left",
-      opacity: visible ? 1 : 0,
-      animation: visible ? `fadeUp 0.6s ${delay}s ease both` : "none",
-    }}>
-      {children}
-    </div>
-  );
+// ─── CURSOR TRAIL ─────────────────────────────────────────────────────────────
+function CursorTrail() {
+  useEffect(()=>{
+    const onMove=(e)=>{
+      if(Math.random()>0.35) return; // sparse
+      const p=document.createElement("div");
+      const size=3+Math.random()*4;
+      const hue=Math.random()>0.5?"#E8C4BC":"#C8D9CA";
+      Object.assign(p.style,{
+        position:"fixed",left:e.clientX+"px",top:e.clientY+"px",
+        width:size+"px",height:size*1.4+"px",borderRadius:"50% 50% 50% 50%/60% 60% 40% 40%",
+        background:hue,pointerEvents:"none",zIndex:9998,
+        transform:"translate(-50%,-50%)",
+        animation:"cursorFade 1s ease forwards",
+      });
+      document.body.appendChild(p);
+      setTimeout(()=>{p.remove();},1000);
+    };
+    window.addEventListener("mousemove",onMove);
+    return ()=>window.removeEventListener("mousemove",onMove);
+  },[]);
+  return null;
 }
 
 // ─── NAV ──────────────────────────────────────────────────────────────────────
 function Nav() {
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 72);
-    window.addEventListener("scroll", fn);
-    return () => window.removeEventListener("scroll", fn);
-  }, []);
-
+  const [scrolled,setScrolled]=useState(false);
+  useEffect(()=>{
+    const fn=()=>setScrolled(window.scrollY>80);
+    window.addEventListener("scroll",fn);
+    return ()=>window.removeEventListener("scroll",fn);
+  },[]);
   return (
     <nav style={{
-      position: "fixed", top: 0, left: 0, right: 0, zIndex: 990,
-      padding: "18px 32px",
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      background: scrolled ? "rgba(247, 242, 234, 0.92)" : "transparent",
-      backdropFilter: scrolled ? "blur(18px)" : "none",
-      borderBottom: scrolled ? `1px solid ${T.ruleFaint}` : "none",
-      transition: "all 0.4s ease",
-      animation: "navSlide 0.8s 0.4s ease both",
+      position:"fixed",top:0,left:0,right:0,zIndex:997,
+      padding:"16px 32px",
+      display:"flex",alignItems:"center",justifyContent:"space-between",
+      background:scrolled?"rgba(250,246,239,0.92)":"transparent",
+      backdropFilter:scrolled?"blur(16px)":"none",
+      borderBottom:scrolled?`1px solid ${T.border}`:"none",
+      transition:"all 0.4s ease",
+      animation:"navIn 1s 0.5s ease both",
     }}>
-      <div className="display-italic" style={{ fontSize: 16, color: T.copper, letterSpacing: 1 }}>
-        M &amp; S
+      <div style={{display:"flex",alignItems:"center",gap:8}}>
+        <RoseBloom size={20} opacity={0.8}/>
+        <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:17,fontWeight:500,color:T.rose,fontStyle:"italic",letterSpacing:1}}>M & S</span>
       </div>
-      <div style={{ display: "flex", gap: 28 }}>
-        {[["#events", "Events"], ["#gallery", "Gallery"], ["#rsvp", "RSVP"]].map(([href, label]) => (
-          <a key={href} href={href} className="nav-link">{label}</a>
+      <div style={{display:"flex",gap:28}}>
+        {[["events","Events"],["rsvp","RSVP"],["gallery","Gallery"]].map(([id,label])=>(
+          <a key={id} href={`#${id}`} className="nav-link">{label}</a>
         ))}
       </div>
     </nav>
   );
 }
 
-// ─── HERO ─────────────────────────────────────────────────────────────────────
-function Hero() {
-  const [loaded, setLoaded] = useState(false);
-  const countdown = useCountdown();
-
-  return (
-    <section className="grain" style={{
-      position: "relative", height: "100vh", minHeight: 640,
-      overflow: "hidden", background: T.paperDeep,
-    }}>
-      {/* Photo — visible, warm, present */}
-      <img
-        src={PHOTO_HERO} alt="Manan and Shrishti"
-        onLoad={() => setLoaded(true)}
-        className="hero-img"
-        style={{
-          position: "absolute", inset: 0, width: "100%", height: "100%",
-          objectFit: "cover", objectPosition: "center top",
-          opacity: loaded ? 0.72 : 0,
-          transition: "opacity 1.6s ease",
-        }}
-      />
-
-      {/* Single, elegant bottom-fade — no crossing gradients */}
-      <div style={{
-        position: "absolute", inset: 0,
-        background: `linear-gradient(to top, ${T.paperDeep} 0%, rgba(238,231,217,0.5) 45%, transparent 100%)`,
-      }} />
-
-      {/* Content — sits in the lower third */}
-      <div style={{
-        position: "absolute", inset: 0,
-        display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "flex-end",
-        padding: "0 24px 60px", textAlign: "center",
-      }}>
-        {/* Eyebrow */}
-        <div style={{
-          fontSize: 9, letterSpacing: 6, textTransform: "uppercase", color: T.inkMid,
-          marginBottom: 16, fontWeight: 500, fontFamily: "'DM Sans', sans-serif",
-          opacity: loaded ? 1 : 0, animation: loaded ? "fadeUp 0.7s 0.2s ease both" : "none",
-        }}>
-          We're getting married
-        </div>
-
-        {/* Names — single flowing italic line, the emotional centrepiece */}
-        <div className="display-italic" style={{
-          fontSize: "clamp(48px, 12vw, 104px)",
-          fontWeight: 400, lineHeight: 0.95, color: T.ink,
-          letterSpacing: -0.5,
-          opacity: loaded ? 1 : 0,
-          animation: loaded ? "fadeUp 1s 0.35s ease both" : "none",
-        }}>
-          Manan &amp; Shrishti
-        </div>
-
-        {/* Date line — plain, unhurried */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: 16, margin: "20px 0 36px",
-          opacity: loaded ? 1 : 0, animation: loaded ? "fadeUp 0.7s 0.6s ease both" : "none",
-        }}>
-          <div style={{ width: 32, height: "0.75px", background: T.rule }} />
-          <div style={{
-            fontSize: 11, letterSpacing: 4, color: T.inkMid,
-            textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif",
-          }}>
-            September 20 · 21 · 2026 · Karnal
-          </div>
-          <div style={{ width: 32, height: "0.75px", background: T.rule }} />
-        </div>
-
-        {/* Countdown — no boxes, just numbers and labels */}
-        <div style={{
-          display: "flex", gap: 32, marginBottom: 44, alignItems: "baseline",
-          opacity: loaded ? 1 : 0, animation: loaded ? "fadeUp 0.7s 0.75s ease both" : "none",
-        }}>
-          {[
-            { label: "Days", val: countdown.days },
-            { label: "Hours", val: countdown.hours },
-            { label: "Mins", val: countdown.minutes },
-            { label: "Secs", val: countdown.seconds },
-          ].map(({ label, val }, i) => (
-            <div key={label} style={{ textAlign: "center" }}>
-              <div className="display" style={{
-                fontSize: "clamp(28px, 6vw, 48px)", color: T.ink, lineHeight: 1, fontWeight: 500,
-              }}>
-                {String(val).padStart(2, "0")}
-              </div>
-              <div style={{ fontSize: 8, letterSpacing: 3, color: T.inkLight, textTransform: "uppercase", marginTop: 5 }}>
-                {label}
-              </div>
-              {i < 3 && (
-                <div style={{
-                  position: "absolute", fontSize: 18, color: T.rule, lineHeight: 1,
-                  marginTop: -28, marginLeft: 68,
-                }}>·</div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* CTA — bordered, elegant */}
-        <a href="#rsvp" style={{
-          display: "inline-block", padding: "14px 44px",
-          border: `1.5px solid ${T.copper}`, color: T.copper,
-          textDecoration: "none", borderRadius: 2,
-          fontWeight: 500, fontSize: 10, letterSpacing: 3.5, textTransform: "uppercase",
-          fontFamily: "'DM Sans', sans-serif",
-          transition: "all 0.3s ease",
-          opacity: loaded ? 1 : 0, animation: loaded ? "fadeUp 0.7s 0.95s ease both" : "none",
-          background: "transparent",
-        }}
-        onMouseEnter={e => { e.currentTarget.style.background = T.copper; e.currentTarget.style.color = T.canvas; }}
-        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.copper; }}
-        >
-          RSVP
-        </a>
-      </div>
-
-      {/* Scroll indicator */}
-      <div style={{
-        position: "absolute", bottom: 22, left: "50%", transform: "translateX(-50%)",
-        display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
-        animation: "floatY 3s ease-in-out infinite",
-      }}>
-        <div style={{ width: "0.75px", height: 30, background: `linear-gradient(to bottom, transparent, ${T.copper}70)` }} />
-        <div style={{ fontSize: 7, letterSpacing: 4, color: T.inkFaint, textTransform: "uppercase" }}>scroll</div>
-      </div>
-    </section>
-  );
-}
-
-// ─── FAMILIES ─────────────────────────────────────────────────────────────────
-function Families() {
-  const [ref, visible] = useReveal(0.15);
-  return (
-    <section ref={ref} className="grain" style={{
-      background: T.paper, padding: "88px 24px 80px",
-      textAlign: "center", position: "relative",
-    }}>
-      <div style={{ maxWidth: 600, margin: "0 auto" }}>
-        <Eyebrow visible={visible}>With joy in our hearts</Eyebrow>
-
-        <h2 className="display-italic" style={{
-          fontSize: "clamp(28px, 6vw, 52px)", fontWeight: 400, color: T.ink,
-          lineHeight: 1.2, marginBottom: 20,
-          opacity: visible ? 1 : 0, animation: visible ? "fadeUp 0.8s 0.1s ease both" : "none",
-        }}>
-          You're not just invited.<br />You're family.
-        </h2>
-
-        <p style={{
-          fontSize: 15, color: T.inkLight, lineHeight: 1.95, maxWidth: 480, margin: "0 auto 40px",
-          fontWeight: 300,
-          opacity: visible ? 1 : 0, animation: visible ? "fadeUp 0.8s 0.2s ease both" : "none",
-        }}>
-          Every love story is beautiful, but ours is our favourite. As we begin this new
-          chapter together, the only thing that would make it complete is having the people
-          we love beside us. Come laugh, dance, eat far too much, and celebrate with us.
-        </p>
-
-        <Divider my={0} />
-
-        {/* Family names — two columns, a real typographic treatment */}
-        <div style={{
-          display: "flex", justifyContent: "center", alignItems: "center",
-          gap: 0, marginTop: 32, flexWrap: "wrap",
-          opacity: visible ? 1 : 0, animation: visible ? "scaleIn 0.8s 0.35s ease both" : "none",
-        }}>
-          <div style={{ padding: "0 40px", textAlign: "center" }}>
-            <div style={{ fontSize: 8, letterSpacing: 4, color: T.copper, textTransform: "uppercase", marginBottom: 8 }}>
-              Groom's Family
-            </div>
-            <div className="display-italic" style={{ fontSize: 22, color: T.ink, fontWeight: 400 }}>
-              The Khurana Family
-            </div>
-          </div>
-          <div style={{ width: "0.75px", height: 44, background: T.rule }} />
-          <div style={{ padding: "0 40px", textAlign: "center" }}>
-            <div style={{ fontSize: 8, letterSpacing: 4, color: T.copper, textTransform: "uppercase", marginBottom: 8 }}>
-              Bride's Family
-            </div>
-            <div className="display-italic" style={{ fontSize: 22, color: T.ink, fontWeight: 400 }}>
-              The Kaushik Family
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── RITUALS ──────────────────────────────────────────────────────────────────
-// Ceremony SVG icons — hand-drawn line art feel, no emoji
-function CeremonyIcon({ type }) {
-  const s = { fill: "none", stroke: T.copper, strokeWidth: "1.2", strokeLinecap: "round", strokeLinejoin: "round" };
-  const icons = {
-    mehendi: (
-      <svg width="36" height="36" viewBox="0 0 36 36">
-        <path d="M18 6 C14 10 10 14 10 20 C10 26 14 30 18 30 C22 30 26 26 26 20 C26 14 22 10 18 6Z" {...s} />
-        <path d="M18 12 C16 15 14 18 15 22 C16 25 17 26 18 27" {...s} opacity="0.5" />
-        <path d="M8 20 Q5 17 6 13" {...s} />
-        <path d="M28 20 Q31 17 30 13" {...s} />
-        <circle cx="18" cy="20" r="2.5" {...s} />
-      </svg>
-    ),
-    ring: (
-      <svg width="36" height="36" viewBox="0 0 36 36">
-        <circle cx="18" cy="20" r="9" {...s} />
-        <circle cx="18" cy="20" r="5.5" {...s} />
-        <path d="M14 11 L18 6 L22 11" {...s} />
-        <circle cx="18" cy="7" r="2.5" {...s} />
-        <path d="M16 7 Q18 5 20 7" {...s} opacity="0.5" />
-      </svg>
-    ),
-    sangeet: (
-      <svg width="36" height="36" viewBox="0 0 36 36">
-        <path d="M8 26 Q8 14 16 12 L16 24 Q14 22 12 24 Q10 26 12 28 Q14 30 16 28 L16 12" {...s} />
-        <path d="M16 14 L28 10 L28 22 Q26 20 24 22 Q22 24 24 26 Q26 28 28 26 L28 10" {...s} />
-      </svg>
-    ),
-    haldi: (
-      <svg width="36" height="36" viewBox="0 0 36 36">
-        <path d="M18 10 C13 13 10 17 10 22 C10 26 13 29 18 29 C23 29 26 26 26 22 C26 17 23 13 18 10Z" {...s} />
-        <path d="M10 18 Q6 16 7 11" {...s} />
-        <path d="M26 18 Q30 16 29 11" {...s} />
-        <path d="M15 22 Q18 24 21 22" {...s} opacity="0.5" />
-        <path d="M18 10 L18 6" {...s} />
-        <path d="M14 8 Q18 4 22 8" {...s} />
-      </svg>
-    ),
-    sehra: (
-      <svg width="36" height="36" viewBox="0 0 36 36">
-        <circle cx="18" cy="12" r="5" {...s} />
-        <path d="M10 17 Q18 20 26 17" {...s} />
-        <path d="M11 19 L9 30" {...s} strokeDasharray="1.5 2" opacity="0.7" />
-        <path d="M14 19 L13 30" {...s} strokeDasharray="1.5 2" opacity="0.7" />
-        <path d="M18 20 L18 30" {...s} strokeDasharray="1.5 2" opacity="0.7" />
-        <path d="M22 19 L23 30" {...s} strokeDasharray="1.5 2" opacity="0.7" />
-        <path d="M25 19 L27 30" {...s} strokeDasharray="1.5 2" opacity="0.7" />
-      </svg>
-    ),
-    baraat: (
-      <svg width="36" height="36" viewBox="0 0 36 36">
-        <ellipse cx="18" cy="26" rx="10" ry="5" {...s} />
-        <path d="M8 26 L8 22 Q8 18 18 18 Q28 18 28 22 L28 26" {...s} />
-        <path d="M13 18 Q13 12 18 10 Q23 12 23 18" {...s} />
-        <circle cx="18" cy="9" r="3" {...s} />
-        <circle cx="10" cy="27" r="2" {...s} />
-        <circle cx="26" cy="27" r="2" {...s} />
-      </svg>
-    ),
-    wedding: (
-      <svg width="36" height="36" viewBox="0 0 36 36">
-        <path d="M8 28 L18 10 L28 28 Z" {...s} />
-        <path d="M12 28 Q18 20 24 28" {...s} opacity="0.4" />
-        <path d="M18 10 L18 6" {...s} />
-        <path d="M14 7 Q18 4 22 7" {...s} />
-        <path d="M10 22 L26 22" {...s} opacity="0.5" />
-        <circle cx="18" cy="18" r="2" fill={T.copperLight} stroke="none" />
-      </svg>
-    ),
-    sagan: (
-      <svg width="36" height="36" viewBox="0 0 36 36">
-        <path d="M10 28 C10 20 14 14 18 10 C22 14 26 20 26 28" {...s} />
-        <path d="M14 28 C14 23 16 19 18 16 C20 19 22 23 22 28" {...s} opacity="0.5" />
-        <path d="M10 28 L26 28" {...s} />
-        <path d="M7 28 L29 28" {...s} />
-        <circle cx="18" cy="20" r="2" fill={T.copperPale} stroke={T.copper} strokeWidth="0.8" />
-      </svg>
-    ),
+// ─── MUSIC ────────────────────────────────────────────────────────────────────
+function MusicPlayer() {
+  const [playing,setPlaying]=useState(false);
+  const ref=useRef(null);
+  const toggle=()=>{
+    if(!ref.current) return;
+    if(playing){ref.current.pause();setPlaying(false);}
+    else{ref.current.volume=0.14;ref.current.play().then(()=>setPlaying(true)).catch(()=>{});}
   };
-  return <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>{icons[type] || icons.wedding}</div>;
+  return (
+    <>
+      <audio ref={ref} src="https://cdn.pixabay.com/audio/2022/03/15/audio_4a16f3cb6e.mp3" loop preload="none"/>
+      <button className="music-btn" onClick={toggle} title={playing?"Pause":"Play music"}>
+        {playing
+          ? <svg width="12" height="12" viewBox="0 0 12 12" fill="#B8746A"><rect x="1" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg>
+          : <svg width="12" height="12" viewBox="0 0 12 12" fill="#B8746A"><path d="M2 1.5l9 4.5-9 4.5V1.5z"/></svg>
+        }
+      </button>
+    </>
+  );
 }
 
-function RitualCard({ ritual, index, visible }) {
+// ─── WAX SEAL (ivory theme) ───────────────────────────────────────────────────
+function WaxSeal({ size=80 }) {
   return (
-    <div className="ritual-card" style={{
-      background: T.canvas, border: `1px solid ${T.ruleFaint}`,
-      borderRadius: 3, padding: "24px 20px",
-      opacity: visible ? 1 : 0, animation: visible ? `fadeIn 0.6s ${index * 0.06}s ease both` : "none",
-      boxShadow: "0 2px 12px rgba(42, 33, 24, 0.05)",
+    <svg width={size} height={size} viewBox="0 0 100 100">
+      <defs>
+        <radialGradient id="wsMain" cx="35%" cy="28%">
+          <stop offset="0%"  stopColor="#E8C4BC"/>
+          <stop offset="40%" stopColor="#C9897A"/>
+          <stop offset="80%" stopColor="#8B4F47"/>
+          <stop offset="100%" stopColor="#5C2E2A"/>
+        </radialGradient>
+        <radialGradient id="wsSheen" cx="30%" cy="25%">
+          <stop offset="0%"  stopColor="#FFF0EE" stopOpacity="0.7"/>
+          <stop offset="100%" stopColor="#C9897A" stopOpacity="0"/>
+        </radialGradient>
+      </defs>
+      <circle cx="50" cy="52" r="42" fill="rgba(44,36,32,0.12)"/>
+      <circle cx="50" cy="50" r="42" fill="url(#wsMain)"/>
+      <circle cx="50" cy="50" r="42" fill="url(#wsSheen)"/>
+      {Array.from({length:20},(_,i)=>{
+        const a1=(i/20)*Math.PI*2; const a2=((i+0.5)/20)*Math.PI*2;
+        return <polygon key={i} points={`
+          ${50+42*Math.cos(a1)},${50+42*Math.sin(a1)}
+          ${50+38*Math.cos(a2)},${50+38*Math.sin(a2)}
+          ${50+42*Math.cos(a1+Math.PI/20)},${50+42*Math.sin(a1+Math.PI/20)}
+        `} fill="#7A3530" opacity="0.4"/>;
+      })}
+      <circle cx="50" cy="50" r="36" fill="none" stroke="#FFF0EE" strokeWidth="0.6" opacity="0.5"/>
+      <circle cx="50" cy="50" r="28" fill="none" stroke="#FFF0EE" strokeWidth="0.4" opacity="0.35"/>
+      {[0,45,90,135,180,225,270,315].map(a=>{
+        const rad=a*Math.PI/180;
+        return <ellipse key={a} cx={50+26*Math.cos(rad)} cy={50+26*Math.sin(rad)}
+          rx="3" ry="5" transform={`rotate(${a},${50+26*Math.cos(rad)},${50+26*Math.sin(rad)})`}
+          fill="#FFF0EE" opacity="0.3"/>;
+      })}
+      <text x="50" y="54" textAnchor="middle" fontSize="16"
+        fill="#FAF0EE" fontFamily="'Cormorant Garamond',serif"
+        fontStyle="italic" fontWeight="600" letterSpacing="2">M &amp; S</text>
+    </svg>
+  );
+}
+
+// Petal burst on seal open
+function PetalBurst({ active }) {
+  const petals = useRef(Array.from({length:18},(_,i)=>({
+    id:i, angle:(i/18)*360,
+    dist:55+Math.random()*70,
+    rotate:Math.random()*360,
+    size:4+Math.random()*5,
+    delay:Math.random()*0.25,
+    hue:Math.random()>0.5?"#E8C4BC":"#C8D9CA",
+  }))).current;
+  if(!active) return null;
+  return (
+    <div style={{position:"absolute",top:"45%",left:"50%",width:0,height:0,pointerEvents:"none",zIndex:10}}>
+      {petals.map(p=>{
+        const rad=p.angle*Math.PI/180;
+        return (
+          <div key={p.id} style={{
+            position:"absolute",width:p.size,height:p.size*1.5,
+            borderRadius:"50% 50% 50% 50%/60% 60% 40% 40%",
+            background:p.hue,transform:"translate(-50%,-50%)",
+            "--px":`${Math.cos(rad)*p.dist}px`,"--py":`${Math.sin(rad)*p.dist}px`,
+            "--pr":`${p.rotate}deg`,
+            animation:`petalPop 1.1s ${p.delay}s ease-out forwards`,
+          }}/>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── ENVELOPE (ivory / rose theme) ────────────────────────────────────────────
+function EnvelopeIdle({ envRef, tilt }) {
+  return (
+    <div ref={envRef} style={{
+      width:300, height:210, position:"relative",
+      transform:`perspective(900px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+      transition:"transform 0.12s ease-out",
+      filter:"drop-shadow(0 16px 48px rgba(44,36,32,0.18)) drop-shadow(0 4px 12px rgba(44,36,32,0.1))",
+      animation:"waxFloat 7s ease-in-out infinite",
     }}>
-      <div style={{ marginBottom: 14 }}>
-        <CeremonyIcon type={ritual.iconType} />
+      <svg width="300" height="210" viewBox="0 0 300 210">
+        <defs>
+          <linearGradient id="eBody" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#FEF9F3"/>
+            <stop offset="100%" stopColor="#F3EDE2"/>
+          </linearGradient>
+          <linearGradient id="eFlap" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#FAF0E8"/>
+            <stop offset="100%" stopColor="#EDE0D0"/>
+          </linearGradient>
+        </defs>
+        {/* Body */}
+        <rect x="4" y="60" width="292" height="146" rx="10" fill="url(#eBody)" stroke="#DDD0C4" strokeWidth="1"/>
+        {/* Bottom V fold */}
+        <path d="M4 206 L150 132 L296 206" fill="none" stroke="#C9B8A8" strokeWidth="0.7" opacity="0.6"/>
+        {/* Side shadows */}
+        <path d="M4 60 L4 206 L150 132 Z" fill="#DDD0C4" opacity="0.2"/>
+        <path d="M296 60 L296 206 L150 132 Z" fill="#DDD0C4" opacity="0.2"/>
+        {/* Flap */}
+        <path d="M4 60 L150 148 L296 60 Z" fill="url(#eFlap)" stroke="#DDD0C4" strokeWidth="1"/>
+        {/* Inner dashed border */}
+        <rect x="12" y="68" width="276" height="126" rx="5" fill="none" stroke="#B8955A" strokeWidth="0.5" strokeDasharray="5 4" opacity="0.4"/>
+        {/* Wax seal */}
+        <g transform="translate(110,80)"><WaxSeal size={80}/></g>
+        {/* Bottom text */}
+        <text x="150" y="197" textAnchor="middle" fontSize="7.5" fill="#8A7570"
+          fontFamily="'Cormorant Garamond',serif" fontStyle="italic" letterSpacing="3" opacity="0.7">
+          Manan &amp; Shrishti · 2026
+        </text>
+        {/* Botanical corner sprigs (tiny) */}
+        <g opacity="0.5">
+          <path d="M15 68 Q22 80 18 92" fill="none" stroke="#7A9480" strokeWidth="0.8"/>
+          <ellipse cx="14" cy="95" rx="5" ry="3" transform="rotate(30 14 95)" fill="#7A9480" opacity="0.6"/>
+          <ellipse cx="22" cy="76" rx="5" ry="3" transform="rotate(-20 22 76)" fill="#7A9480" opacity="0.5"/>
+        </g>
+        <g opacity="0.5" transform="scale(-1,1) translate(-300,0)">
+          <path d="M15 68 Q22 80 18 92" fill="none" stroke="#7A9480" strokeWidth="0.8"/>
+          <ellipse cx="14" cy="95" rx="5" ry="3" transform="rotate(30 14 95)" fill="#7A9480" opacity="0.6"/>
+          <ellipse cx="22" cy="76" rx="5" ry="3" transform="rotate(-20 22 76)" fill="#7A9480" opacity="0.5"/>
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function EnvelopeOpening() {
+  return (
+    <svg width="300" height="210" viewBox="0 0 300 210" style={{overflow:"visible"}}>
+      <defs>
+        <linearGradient id="eBody2" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#FEF9F3"/><stop offset="100%" stopColor="#F3EDE2"/>
+        </linearGradient>
+        <linearGradient id="eFlap2" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#FAF0E8"/><stop offset="100%" stopColor="#EDE0D0"/>
+        </linearGradient>
+      </defs>
+      <rect x="4" y="60" width="292" height="146" rx="10" fill="url(#eBody2)" stroke="#DDD0C4" strokeWidth="1"/>
+      <path d="M4 60 L4 206 L150 132 Z" fill="#DDD0C4" opacity="0.2"/>
+      <path d="M296 60 L296 206 L150 132 Z" fill="#DDD0C4" opacity="0.2"/>
+      <path d="M4 206 L150 132 L296 206" fill="none" stroke="#C9B8A8" strokeWidth="0.7" opacity="0.5"/>
+      <g style={{transformOrigin:"150px 60px",animation:"flapOpen 0.85s 0.05s cubic-bezier(0.4,0,0.2,1) forwards"}}>
+        <path d="M4 60 L150 148 L296 60 Z" fill="url(#eFlap2)" stroke="#DDD0C4" strokeWidth="1"/>
+        <circle cx="150" cy="104" r="10" fill="#C9897A" opacity="0.7"/>
+        <circle cx="150" cy="104" r="6" fill="#E8C4BC" opacity="0.6"/>
+        <text x="150" y="108" textAnchor="middle" fontSize="7" fill="#5C2E2A" fontFamily="serif" fontStyle="italic" fontWeight="600">M&S</text>
+      </g>
+      <ellipse cx="150" cy="80" rx="50" ry="7" fill="#B8746A" opacity="0.05"/>
+    </svg>
+  );
+}
+
+function EnvelopeOpen() {
+  return (
+    <svg width="300" height="180" viewBox="0 0 300 180">
+      <defs>
+        <linearGradient id="eBody3" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#FEF9F3"/><stop offset="100%" stopColor="#F3EDE2"/>
+        </linearGradient>
+      </defs>
+      <path d="M4 30 L150 -28 L296 30" fill="#FAF0E8" stroke="#DDD0C4" strokeWidth="0.8" opacity="0.7"/>
+      <rect x="4" y="30" width="292" height="146" rx="10" fill="url(#eBody3)" stroke="#DDD0C4" strokeWidth="1"/>
+      <path d="M4 30 L4 176 L150 102 Z" fill="#DDD0C4" opacity="0.18"/>
+      <path d="M296 30 L296 176 L150 102 Z" fill="#DDD0C4" opacity="0.18"/>
+      <path d="M4 176 L150 102 L296 176" fill="none" stroke="#C9B8A8" strokeWidth="0.6" opacity="0.4"/>
+      <rect x="18" y="38" width="264" height="118" rx="3" fill="none" stroke="#B8955A" strokeWidth="0.4" opacity="0.3"/>
+    </svg>
+  );
+}
+
+// ─── OPENING SEQUENCE ─────────────────────────────────────────────────────────
+function OpeningSequence({ onComplete }) {
+  const [phase, setPhase] = useState("idle");
+  const [tilt, setTilt] = useState({x:0,y:0});
+  const envRef = useRef(null);
+
+  const handleMouseMove = useCallback((e) => {
+    if(phase !== "idle") return;
+    const rect = envRef.current?.getBoundingClientRect();
+    if(!rect) return;
+    const dx = (e.clientX - (rect.left+rect.width/2)) / (window.innerWidth/2);
+    const dy = (e.clientY - (rect.top+rect.height/2)) / (window.innerHeight/2);
+    setTilt({x:dy*5, y:-dx*5});
+  }, [phase]);
+
+  const handleTap = useCallback(() => {
+    if(phase !== "idle") return;
+    setPhase("opening");
+    setTimeout(()=>setPhase("card"), 1050);
+    setTimeout(()=>{ setPhase("done"); setTimeout(onComplete, 650); }, 3200);
+  }, [phase, onComplete]);
+
+  return (
+    <div onClick={handleTap} onMouseMove={handleMouseMove} style={{
+      position:"fixed",inset:0,zIndex:9999,
+      display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+      cursor:phase==="idle"?"pointer":"default",
+      opacity:phase==="done"?0:1,
+      transition:phase==="done"?"opacity 0.65s ease":"none",
+      overflow:"hidden",
+      background:T.parchment,
+    }}>
+      {/* Soft textured background */}
+      <div style={{position:"absolute",inset:0,
+        background:"radial-gradient(ellipse 70% 70% at 50% 45%, #FEF9F3 0%, #F3EDE2 60%, #EDE0D4 100%)",
+      }}/>
+
+      <Petals count={18}/>
+
+      {/* Large botanical frame behind everything */}
+      <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",pointerEvents:"none",opacity:0.25}}>
+        <BotanicalFrame width={600} height={700}/>
       </div>
-      <div style={{ fontSize: 8, letterSpacing: 4, color: T.copper, textTransform: "uppercase", marginBottom: 5 }}>
-        {ritual.day}
-      </div>
-      <div className="display" style={{ fontSize: 17, fontWeight: 500, color: T.ink, marginBottom: 10 }}>
-        {ritual.name}
-      </div>
-      <div style={{ height: "0.75px", background: T.ruleFaint, marginBottom: 12 }} />
-      <p style={{ fontSize: 12.5, color: T.inkLight, lineHeight: 1.8, marginBottom: 12, fontWeight: 300 }}>
-        {ritual.what}
-      </p>
-      <div style={{ fontSize: 11, color: T.inkFaint }}>
-        <span style={{ color: T.sage, marginRight: 4 }}>↳</span> {ritual.dress}
-      </div>
-      {ritual.tip && (
-        <div style={{ fontSize: 11, color: T.inkFaint, marginTop: 5, fontStyle: "italic" }}>
-          {ritual.tip}
+
+      {/* IDLE */}
+      {phase==="idle" && (
+        <div style={{position:"relative",zIndex:2,display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center",animation:"fadeIn 1.4s ease both"}}>
+          <EnvelopeIdle envRef={envRef} tilt={tilt}/>
+          <div style={{marginTop:32,display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:16,color:T.inkMuted,letterSpacing:2}}>
+              a letter, sealed with love
+            </div>
+            <div style={{width:1,height:28,background:`linear-gradient(to bottom,transparent,${T.rose}60)`,marginTop:6,animation:"floatY 2.5s ease-in-out infinite"}}/>
+            <div style={{fontSize:9,letterSpacing:5,color:T.inkFaint,textTransform:"uppercase"}}>tap to open</div>
+          </div>
+        </div>
+      )}
+
+      {/* OPENING */}
+      {phase==="opening" && (
+        <div style={{position:"relative",zIndex:2,display:"flex",flexDirection:"column",alignItems:"center"}}>
+          <div style={{width:300,height:210,position:"relative",filter:"drop-shadow(0 16px 48px rgba(44,36,32,0.15))"}}>
+            <EnvelopeOpening/>
+            <PetalBurst active={true}/>
+          </div>
+        </div>
+      )}
+
+      {/* CARD */}
+      {(phase==="card"||phase==="done") && (
+        <div style={{position:"relative",zIndex:2,display:"flex",flexDirection:"column",alignItems:"center",padding:"0 24px",maxWidth:420,width:"100%"}}>
+          <div style={{width:300,height:180,position:"relative",flexShrink:0,filter:"drop-shadow(0 6px 24px rgba(44,36,32,0.12))"}}>
+            <EnvelopeOpen/>
+          </div>
+
+          {/* The card */}
+          <div style={{
+            width:"100%",maxWidth:360,
+            background:T.ivory,
+            border:`1px solid ${T.border}`,
+            borderRadius:12,
+            padding:"36px 32px 32px",
+            position:"relative",
+            boxShadow:"0 2px 0 rgba(255,255,255,0.8) inset, 0 20px 60px rgba(44,36,32,0.14), 0 4px 16px rgba(44,36,32,0.08)",
+            animation:"cardRiseUp 0.85s cubic-bezier(0.16,1,0.3,1) both",
+            marginTop:-55,zIndex:5,
+          }}>
+            {/* shimmer */}
+            <div style={{position:"absolute",inset:0,borderRadius:12,overflow:"hidden",pointerEvents:"none"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(105deg,transparent 30%,rgba(255,255,255,0.5) 50%,transparent 70%)",animation:"sheenSlide 1.8s 0.3s ease both"}}/>
+            </div>
+            {/* corner marks */}
+            <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}} viewBox="0 0 320 220" preserveAspectRatio="none">
+              <path d="M16 6 L6 6 L6 16" fill="none" stroke="#B8955A" strokeWidth="1" opacity="0.5"/>
+              <path d="M304 6 L314 6 L314 16" fill="none" stroke="#B8955A" strokeWidth="1" opacity="0.5"/>
+              <path d="M16 214 L6 214 L6 204" fill="none" stroke="#B8955A" strokeWidth="1" opacity="0.5"/>
+              <path d="M304 214 L314 214 L314 204" fill="none" stroke="#B8955A" strokeWidth="1" opacity="0.5"/>
+            </svg>
+
+            <div style={{position:"relative",zIndex:1,textAlign:"center"}}>
+              <div style={{fontSize:8,letterSpacing:6,color:T.rose,textTransform:"uppercase",marginBottom:16,fontFamily:"Inter,sans-serif",animation:"fadeUp 0.6s 0.15s ease both",animationFillMode:"both"}}>
+                you are cordially invited
+              </div>
+              <div style={{marginBottom:14,display:"flex",justifyContent:"center",gap:8,animation:"fadeIn 0.6s 0.25s ease both",animationFillMode:"both"}}>
+                <Sprig opacity={0.5}/><RoseBloom size={22} opacity={0.7}/><Sprig flip opacity={0.5}/>
+              </div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(24px,6vw,36px)",fontWeight:400,fontStyle:"italic",color:T.ink,letterSpacing:1,lineHeight:1.05,marginBottom:6,animation:"fadeUp 0.7s 0.35s ease both",animationFillMode:"both"}}>
+                Manan &amp; Shrishti
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,margin:"14px auto",maxWidth:200,animation:"fadeIn 0.6s 0.55s ease both",animationFillMode:"both"}}>
+                <div style={{flex:1,height:"0.5px",background:`linear-gradient(to right,transparent,${T.gold}80)`}}/>
+                <RoseBloom size={10} opacity={0.6}/>
+                <div style={{flex:1,height:"0.5px",background:`linear-gradient(to left,transparent,${T.gold}80)`}}/>
+              </div>
+              <div style={{fontSize:10,letterSpacing:4,color:T.inkMuted,textTransform:"uppercase",marginBottom:4,fontFamily:"Inter,sans-serif",animation:"fadeUp 0.7s 0.7s ease both",animationFillMode:"both"}}>
+                20 · 21 September 2026
+              </div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:13,color:T.rose,letterSpacing:1,animation:"fadeUp 0.6s 0.85s ease both",animationFillMode:"both"}}>
+                Vivan Resort, Karnal
+              </div>
+            </div>
+          </div>
+
+          <div style={{marginTop:22,fontSize:9,letterSpacing:4,color:T.inkFaint,textTransform:"uppercase",animation:"fadeIn 0.8s 1.3s ease both",animationFillMode:"both"}}>
+            tap anywhere to continue
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-function Rituals() {
-  const [ref, visible] = useReveal(0.04);
-  const rituals = [
-    { iconType: "mehendi", name: "Mehendi", day: "Day 1 · Afternoon", what: "Henna is applied to the bride's hands in beautiful patterns. Music, colour, and laughter — guests can get mehendi too.", dress: "Floral & festive", tip: "Come ready to relax and enjoy" },
-    { iconType: "sagan",   name: "Sagan", day: "Day 1 · Evening", what: "A blessing ceremony where both families formally welcome the union with sweets, gifts, and love.", dress: "Festive Indian", tip: "Bring your warmest blessings" },
-    { iconType: "ring",    name: "Ring Ceremony", day: "Day 1 · Evening", what: "Manan and Shrishti exchange rings, surrounded by everyone they love. A modern moment woven into the classical evening.", dress: "Festive Indian", tip: "The perfect photo moment" },
-    { iconType: "sangeet", name: "Ladies Sangeet", day: "Day 1 · Night", what: "A night of music and dance — the families have been rehearsing! Come cheer, dance, and celebrate.", dress: "Cocktail or lehenga", tip: "Wear your dancing shoes" },
-    { iconType: "haldi",   name: "Haldi", day: "Day 2 · Morning", what: "Turmeric paste is playfully applied to the couple for blessings and a radiant glow. Pure joy.", dress: "Yellow or white", tip: "Expect happy turmeric stains" },
-    { iconType: "sehra",   name: "Sehra Bandi", day: "Day 2 · Afternoon", what: "The groom's family ties his floral sehra before the baraat — a tender, emotional family moment.", dress: "Sherwani / ethnic", tip: "A heartfelt moment to witness" },
-    { iconType: "baraat",  name: "Baraat", day: "Day 2 · Evening", what: "The groom's grand procession — dhol, dancing, and pure celebration all the way in.", dress: "Your ethnic finest", tip: "Save some energy to dance" },
-    { iconType: "wedding", name: "Wedding & Pheras", day: "Day 2 · Night", what: "Seven rounds around the holy fire, seven vows, one forever. The most sacred moment of the celebration.", dress: "Your most formal best", tip: "The most moving moment of all" },
-  ];
+// ─── HERO ─────────────────────────────────────────────────────────────────────
+function Hero() {
+  const [loaded,setLoaded]=useState(false);
+  const [ready,setReady]=useState(false);
+  const cd=useCountdown();
+  useEffect(()=>{const t=setTimeout(()=>setReady(true),150);return()=>clearTimeout(t);},[]);
 
   return (
-    <section ref={ref} className="grain" style={{ background: T.paperDeep, padding: "88px 24px 96px", position: "relative" }}>
-      <div style={{ maxWidth: 900, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 52 }}>
-          <Eyebrow visible={visible}>Hindu Wedding Traditions</Eyebrow>
-          <h2 className="display-italic" style={{
-            fontSize: "clamp(26px, 5vw, 44px)", fontWeight: 400, color: T.ink,
-            opacity: visible ? 1 : 0, animation: visible ? "fadeUp 0.8s 0.1s ease both" : "none",
-          }}>
-            What to expect &amp; what to wear
-          </h2>
+    <section style={{position:"relative",minHeight:"100vh",background:T.parchment,overflow:"hidden",display:"flex",flexDirection:"column"}}>
+      {/* Photo — top half, softly faded */}
+      <div style={{position:"relative",width:"100%",height:"62vh",overflow:"hidden",flexShrink:0}}>
+        <img src={PHOTO_HERO} alt="Manan and Shrishti" onLoad={()=>setLoaded(true)}
+          style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center top",
+            opacity:loaded?1:0,transition:"opacity 1.8s ease",
+            animation:loaded?"slowZoom 22s ease-in-out infinite alternate":"none"}}/>
+        {/* Gradient fade to parchment at bottom */}
+        <div style={{position:"absolute",inset:0,background:`linear-gradient(to bottom,rgba(250,246,239,0) 0%,rgba(250,246,239,0.3) 50%,${T.parchment} 100%)`}}/>
+        {/* Soft vignette */}
+        <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at center,transparent 40%,rgba(243,237,226,0.5) 100%)"}}/>
+      </div>
+
+      <Petals count={10}/>
+
+      {/* Content below photo */}
+      <div style={{
+        flex:1,
+        display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+        textAlign:"center",padding:"0 24px 60px",
+        background:T.parchment,
+        position:"relative",
+      }}>
+        {/* Botanical frame behind text */}
+        <div style={{position:"absolute",top:-80,left:"50%",transform:"translateX(-50%)",pointerEvents:"none",opacity:0.18}}>
+          <BotanicalFrame width={520} height={420}/>
         </div>
 
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-          gap: 16,
-        }}>
-          {rituals.map((r, i) => <RitualCard key={i} ritual={r} index={i} visible={visible} />)}
+        <div style={{position:"relative",zIndex:1}}>
+          <div style={{fontSize:9,letterSpacing:6,color:T.sage,textTransform:"uppercase",marginBottom:16,fontWeight:500,opacity:ready?1:0,animation:ready?"fadeUp 0.8s 0.1s ease both":"none"}}>
+            We're getting married
+          </div>
+
+          {/* NAMES — single line, equal, large, italic serif */}
+          <div style={{
+            fontFamily:"'Cormorant Garamond',serif",
+            fontSize:"clamp(44px,11vw,100px)",
+            fontWeight:400,fontStyle:"italic",
+            color:T.ink,
+            letterSpacing:1,lineHeight:0.95,
+            marginBottom:8,
+            whiteSpace:"nowrap",
+            opacity:ready?1:0,
+            animation:ready?"fadeUp 1s 0.3s ease both":"none",
+          }}>
+            Manan &amp; Shrishti
+          </div>
+
+          {/* Botanical divider */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,margin:"18px 0",opacity:ready?1:0,animation:ready?"fadeIn 0.8s 0.55s ease both":"none"}}>
+            <Sprig opacity={0.55}/>
+            <RoseBloom size={24} opacity={0.75}/>
+            <Sprig flip opacity={0.55}/>
+          </div>
+
+          <div style={{fontSize:11,letterSpacing:4,color:T.inkMuted,textTransform:"uppercase",marginBottom:32,opacity:ready?1:0,animation:ready?"fadeUp 0.8s 0.7s ease both":"none"}}>
+            September 20 · 21 · 2026 · Karnal
+          </div>
+
+          {/* Countdown */}
+          <div style={{display:"flex",gap:10,marginBottom:40,justifyContent:"center",opacity:ready?1:0,animation:ready?"fadeUp 0.8s 0.9s ease both":"none"}}>
+            {[{l:"Days",v:cd.days},{l:"Hours",v:cd.hours},{l:"Minutes",v:cd.minutes},{l:"Seconds",v:cd.seconds}].map(({l,v})=>(
+              <div key={l} style={{
+                textAlign:"center",minWidth:72,
+                background:"#fff",
+                border:`1px solid ${T.border}`,
+                borderRadius:12,padding:"14px 6px",
+                boxShadow:"0 2px 8px rgba(44,36,32,0.06)",
+              }}>
+                <div style={{fontSize:"clamp(22px,5vw,38px)",color:T.ink,lineHeight:1,fontWeight:600,fontFamily:"'Cormorant Garamond',serif"}}>{String(v).padStart(2,"0")}</div>
+                <div style={{color:T.rose,fontSize:8,letterSpacing:3,textTransform:"uppercase",marginTop:5,fontFamily:"Inter,sans-serif"}}>{l}</div>
+              </div>
+            ))}
+          </div>
+
+          <a href="#rsvp" style={{
+            display:"inline-block",padding:"15px 48px",
+            background:T.rose,color:"#fff",
+            textDecoration:"none",borderRadius:100,
+            fontWeight:500,fontSize:11,letterSpacing:3,textTransform:"uppercase",
+            opacity:ready?1:0,animation:ready?"fadeUp 0.8s 1.1s ease both":"none",
+            boxShadow:"0 4px 16px rgba(184,116,106,0.35)",
+            transition:"background 0.25s,box-shadow 0.25s",
+          }}
+          onMouseEnter={e=>{e.currentTarget.style.background=T.roseDark;e.currentTarget.style.boxShadow="0 6px 20px rgba(184,116,106,0.45)";}}
+          onMouseLeave={e=>{e.currentTarget.style.background=T.rose;e.currentTarget.style.boxShadow="0 4px 16px rgba(184,116,106,0.35)";}}>
+            Join the celebration
+          </a>
         </div>
+      </div>
+
+      {/* Scroll cue */}
+      <div style={{position:"absolute",bottom:20,left:"50%",transform:"translateX(-50%)",display:"flex",flexDirection:"column",alignItems:"center",gap:5,animation:"floatY 3s ease-in-out infinite"}}>
+        <div style={{width:1,height:32,background:`linear-gradient(to bottom,transparent,${T.rose}60)`}}/>
+        <div style={{fontSize:8,letterSpacing:4,color:T.inkFaint,textTransform:"uppercase"}}>scroll</div>
       </div>
     </section>
   );
 }
 
-// ─── EVENTS ───────────────────────────────────────────────────────────────────
-function EventCard({ day, di, visible }) {
-  return (
-    <div className="event-card" style={{
-      background: T.canvas, border: `1px solid ${T.ruleFaint}`,
-      borderRadius: 3, overflow: "hidden",
-      boxShadow: "0 2px 16px rgba(42, 33, 24, 0.05)",
-      opacity: visible ? 1 : 0, animation: visible ? `fadeUp 0.7s ${di * 0.12}s ease both` : "none",
-    }}>
-      {/* Header */}
-      <div style={{
-        padding: "24px 28px 20px",
-        borderBottom: `1px solid ${T.ruleFaint}`,
-        display: "flex", alignItems: "flex-start", justifyContent: "space-between",
-      }}>
-        <div>
-          <div className="display" style={{ fontSize: 22, fontWeight: 500, color: T.ink }}>
-            {day.day}
-          </div>
-          <div style={{ fontSize: 10, letterSpacing: 3, color: T.copper, textTransform: "uppercase", marginTop: 4 }}>
-            {day.label} · {day.date}
-          </div>
-        </div>
-        <div style={{ fontSize: 28, opacity: 0.6 }}>{day.icon}</div>
-      </div>
-
-      {/* Functions */}
-      <div style={{ padding: "4px 0" }}>
-        {day.functions.map((fn, fi) => (
-          <div key={fi} style={{
-            display: "flex", gap: 18, alignItems: "flex-start",
-            padding: "18px 28px",
-            borderBottom: fi < day.functions.length - 1 ? `1px solid ${T.ruleFaint}` : "none",
-          }}>
-            <div style={{ fontSize: 20, flexShrink: 0, marginTop: 2, opacity: 0.75 }}>{fn.icon}</div>
-            <div style={{ flex: 1 }}>
-              <div className="display" style={{ fontSize: 16, fontWeight: 500, color: T.ink, marginBottom: 3 }}>
-                {fn.name}
-              </div>
-              <div style={{ fontSize: 10, color: T.copper, marginBottom: 5, letterSpacing: 1 }}>{fn.time}</div>
-              <div style={{ fontSize: 11, color: T.inkLight }}>
-                <span style={{ color: T.sage, marginRight: 4 }}>↳</span>{fn.dress}
-              </div>
-              {fn.note && (
-                <div style={{ fontSize: 11, color: T.inkFaint, marginTop: 3, fontStyle: "italic" }}>
-                  {fn.note}
-                </div>
-              )}
-            </div>
-          </div>
+// ─── CEREMONY ICONS (line art, warm tones) ────────────────────────────────────
+function CeremonyIcon({ type, size=52 }) {
+  const s={fill:"none",stroke:T.rose,strokeWidth:"1.3",strokeLinecap:"round",strokeLinejoin:"round"};
+  const icons={
+    haldi:(
+      <svg width={size} height={size} viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="10" {...s}/>
+        <path d="M28 18 C28 12 22 8 22 8 C22 8 20 14 24 18" {...s}/>
+        <path d="M28 18 C30 12 36 10 36 10 C36 10 36 16 28 18" {...s}/>
+        <path d="M18 28 C12 26 10 20 10 20 C10 20 16 18 18 24" {...s}/>
+        <path d="M38 28 C44 26 46 20 46 20 C46 20 40 18 38 24" {...s}/>
+        <ellipse cx="28" cy="42" rx="12" ry="4" {...s}/>
+        <line x1="28" y1="38" x2="28" y2="42" {...s}/>
+      </svg>
+    ),
+    ring:(
+      <svg width={size} height={size} viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="12" {...s}/>
+        <circle cx="28" cy="28" r="7" {...s}/>
+        <path d="M22 16 L28 10 L34 16" {...s}/>
+        <circle cx="28" cy="12" r="3" {...s}/>
+        <path d="M20 40 Q28 46 36 40" {...s}/>
+      </svg>
+    ),
+    ghadi:(
+      <svg width={size} height={size} viewBox="0 0 56 56">
+        <path d="M16 44 L28 10 L40 44 Z" {...s}/>
+        <circle cx="28" cy="28" r="4" fill={T.rose} stroke="none"/>
+        <path d="M20 36 L36 36" {...s}/>
+        <path d="M28 10 L28 6" {...s}/>
+        <circle cx="28" cy="5" r="2" {...s}/>
+        <path d="M12 44 L44 44" {...s}/>
+      </svg>
+    ),
+    sehra:(
+      <svg width={size} height={size} viewBox="0 0 56 56">
+        <path d="M16 18 Q28 12 40 18" {...s}/>
+        <path d="M14 26 Q28 20 42 26" {...s}/>
+        {[18,22,26,30,34,38].map((x,i)=>(
+          <path key={i} d={`M${x} 26 Q${x-1} 36 ${x} 42`} {...s} strokeOpacity={0.5+i*0.08}/>
         ))}
-      </div>
+        <circle cx="28" cy="15" r="3" {...s}/>
+      </svg>
+    ),
+    baraat:(
+      <svg width={size} height={size} viewBox="0 0 56 56">
+        <path d="M8 36 Q20 28 32 32 Q40 34 48 30" {...s}/>
+        <ellipse cx="18" cy="36" rx="8" ry="5" {...s}/>
+        <path d="M14 31 Q18 22 22 31" {...s}/>
+        <circle cx="18" cy="20" r="4" {...s}/>
+        <path d="M38 28 Q42 22 46 26 Q44 32 40 30" {...s}/>
+      </svg>
+    ),
+    reception:(
+      <svg width={size} height={size} viewBox="0 0 56 56">
+        <path d="M14 42 L14 24 Q14 18 20 18 L36 18 Q42 18 42 24 L42 42" {...s}/>
+        <path d="M10 42 L46 42" {...s}/>
+        <path d="M22 18 L22 12 Q22 8 28 8 Q34 8 34 12 L34 18" {...s}/>
+        <path d="M24 30 Q28 26 32 30 Q28 36 24 30" {...s}/>
+        <circle cx="28" cy="10" r="2" fill={T.rose} stroke="none"/>
+      </svg>
+    ),
+  };
+  return icons[type]||null;
+}
 
-      {/* Footer */}
-      <div style={{ padding: "16px 28px", borderTop: `1px solid ${T.ruleFaint}` }}>
-        <div style={{ fontSize: 10, color: T.inkFaint, letterSpacing: 1 }}>
-          📍 Vivan Venue, Karnal, Haryana
+// ─── EVENTS ───────────────────────────────────────────────────────────────────
+const EVENTS=[
+  {day:"Day One · Sunday, 20 September 2026",rose:true,items:[
+    {id:"haldi",icon:"haldi",time:"11:00 AM",name:"Haldi",desc:"Turmeric, blessings, and joyful chaos.",colours:["#F5C518","#F0A500","#E8D44D","#FFF176"],girls:"Yellow or white kurta / lehenga",boys:"White or yellow kurta pyjama",note:"Wear something you don't mind staining."},
+    {id:"ring",icon:"ring",time:"7:00 PM",name:"Ring Ceremony & Sangeet",desc:"Rings, music, dancing under the stars.",colours:["#1B5E20","#880E4F","#0D47A1","#4A148C","#B71C1C"],girls:"Lehenga or saree — go all out",boys:"Sherwani or embroidered kurta"},
+  ]},
+  {day:"Day Two · Monday, 21 September 2026",rose:false,items:[
+    {id:"ghadi",icon:"ghadi",time:"11:00 AM",name:"Ghadi Ghadoli",desc:"Sacred blessings before everything begins.",colours:["#CE93D8","#E8D5B0","#D4AC0D","#FFF8E1"],girls:"Salwar suit or saree",boys:"Kurta pyjama"},
+    {id:"sehra",icon:"sehra",time:"2:00 PM",name:"Sehra Bandi",desc:"The veil is tied. Quiet. Emotional. Beautiful.",colours:["#1A237E","#4E342E","#BF360C","#B8955A"],girls:"Saree or anarkali",boys:"Bandhgala or formal kurta"},
+    {id:"baraat",icon:"baraat",time:"4:00 PM",name:"Baraat",desc:"Music thunders. Petals fly. Come dance.",colours:["#E65100","#F9A825","#C62828","#AD1457"],girls:"Lehenga or sharara",boys:"Sherwani or embroidered kurta",note:"Comfortable footwear strongly recommended."},
+    {id:"reception",icon:"reception",time:"8:00 PM",name:"Reception",desc:"Joy, fine food, two families becoming one.",colours:["#212121","#B8955A","#880E4F","#4E342E"],girls:"Saree, lehenga or gown",boys:"Sherwani, suit or bandhgala"},
+  ]},
+];
+
+function EventCard({ ev, visible, delay }) {
+  const [open,setOpen]=useState(false);
+  return (
+    <div className="ev-card" onClick={()=>setOpen(o=>!o)} style={{
+      background:"#fff",borderRadius:16,padding:"22px 24px",marginBottom:14,cursor:"pointer",
+      border:`1px solid ${T.borderLight}`,
+      boxShadow:"0 2px 12px rgba(44,36,32,0.06)",
+      opacity:visible?1:0,animation:visible?`fadeUp 0.7s ${delay}s ease both`:"none",
+    }}>
+      <div style={{display:"flex",alignItems:"flex-start",gap:18}}>
+        <div style={{flexShrink:0,opacity:0.9,marginTop:2}}><CeremonyIcon type={ev.icon} size={48}/></div>
+        <div style={{flex:1}}>
+          <div style={{display:"flex",alignItems:"baseline",gap:12,flexWrap:"wrap",marginBottom:5}}>
+            <div style={{fontSize:"clamp(17px,3vw,21px)",color:T.ink,fontWeight:500,fontFamily:"'Cormorant Garamond',serif"}}>{ev.name}</div>
+            <div style={{fontSize:10,letterSpacing:2,color:T.rose,textTransform:"uppercase",fontFamily:"Inter,sans-serif"}}>{ev.time}</div>
+          </div>
+          <p style={{fontSize:13.5,color:T.inkLight,lineHeight:1.8,fontWeight:300,marginBottom:10,fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic"}}>{ev.desc}</p>
+          <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+            <div style={{fontSize:9,letterSpacing:2,color:T.inkMuted,textTransform:"uppercase",marginRight:2}}>Dress</div>
+            {ev.colours.map((c,i)=>(
+              <div key={i} style={{width:16,height:16,borderRadius:"50%",background:c,border:`1.5px solid rgba(44,36,32,0.1)`}}/>
+            ))}
+          </div>
+          {open&&(
+            <div style={{marginTop:14,paddingTop:14,borderTop:`1px solid ${T.borderLight}`,animation:"fadeIn 0.3s ease"}}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:ev.note?10:0}}>
+                <div>
+                  <div style={{fontSize:9,letterSpacing:2,color:T.sage,textTransform:"uppercase",marginBottom:4}}>She wears</div>
+                  <div style={{fontSize:13,color:T.inkLight,fontWeight:300}}>{ev.girls}</div>
+                </div>
+                <div>
+                  <div style={{fontSize:9,letterSpacing:2,color:T.sage,textTransform:"uppercase",marginBottom:4}}>He wears</div>
+                  <div style={{fontSize:13,color:T.inkLight,fontWeight:300}}>{ev.boys}</div>
+                </div>
+              </div>
+              {ev.note&&<div style={{fontSize:12,color:T.inkFaint,fontStyle:"italic",fontFamily:"'Cormorant Garamond',serif"}}>✦ {ev.note}</div>}
+            </div>
+          )}
+          <div style={{fontSize:10,color:T.inkFaint,marginTop:8,letterSpacing:1}}>{open?"▲ less":"▼ dress details"}</div>
         </div>
       </div>
     </div>
@@ -696,124 +865,42 @@ function EventCard({ day, di, visible }) {
 }
 
 function Events() {
-  const [ref, visible] = useReveal(0.05);
-  const events = [
-    {
-      day: "Day One", label: "Saturday", date: "20 September 2026", icon: "🌸",
-      functions: [
-        { icon: "🌿", name: "Mehendi", time: "1:00 PM – 4:00 PM", dress: "Floral & colourful", note: "" },
-        { icon: "💍", name: "Sagan + Ring Ceremony", time: "7:00 PM onwards", dress: "Festive Indian", note: "" },
-        { icon: "🎶", name: "Ladies Sangeet", time: "7:00 PM onwards", dress: "Cocktail / lehenga", note: "Come ready to dance!" },
-      ],
-    },
-    {
-      day: "Day Two", label: "Sunday", date: "21 September 2026", icon: "✨",
-      functions: [
-        { icon: "🌼", name: "Haldi", time: "Morning", dress: "Yellow or white — expect turmeric!", note: "" },
-        { icon: "👑", name: "Sehra Bandi", time: "Afternoon", dress: "Sherwani / ethnic", note: "" },
-        { icon: "🐴", name: "Baraat + Wedding Ceremony", time: "Evening", dress: "Your finest Indian attire", note: "The grand finale" },
-      ],
-    },
-  ];
-
+  const [ref,visible]=useReveal(0.05);
   return (
-    <section id="events" ref={ref} className="grain" style={{
-      background: T.paper, padding: "88px 24px 96px", position: "relative",
-    }}>
-      <div style={{ maxWidth: 800, margin: "0 auto" }}>
-        {/* Section header — postmark as the signature element */}
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <div style={{
-            display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
-            opacity: visible ? 1 : 0, animation: visible ? "scaleIn 0.7s ease both" : "none",
-          }}>
-            <Postmark label="M & S" sub="September 2026" size={100} />
+    <section id="events" ref={ref} style={{background:T.parchmentDeep,padding:"96px 24px",position:"relative",overflow:"hidden"}}>
+      {/* Background botanical */}
+      <div style={{position:"absolute",right:-60,top:"50%",transform:"translateY(-50%)",opacity:0.08,pointerEvents:"none"}}>
+        <BotanicalFrame width={400} height={600}/>
+      </div>
+
+      <div style={{maxWidth:700,margin:"0 auto",position:"relative",zIndex:1}}>
+        <div style={{textAlign:"center",marginBottom:56}}>
+          <div style={{fontSize:9,letterSpacing:5,color:T.sage,textTransform:"uppercase",marginBottom:12,fontWeight:500,opacity:visible?1:0,animation:visible?"fadeUp 0.6s ease both":"none"}}>
+            The celebrations
           </div>
-          <Eyebrow visible={visible} delay={0.2}>The Celebrations</Eyebrow>
-          <h2 className="display-italic" style={{
-            fontSize: "clamp(26px, 5vw, 44px)", fontWeight: 400, color: T.ink,
-            opacity: visible ? 1 : 0, animation: visible ? "fadeUp 0.8s 0.3s ease both" : "none",
-          }}>
-            Two days of joy
+          <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(28px,5vw,46px)",color:T.ink,fontWeight:400,fontStyle:"italic",opacity:visible?1:0,animation:visible?"fadeUp 0.8s 0.1s ease both":"none"}}>
+            Two days. A lifetime of memories.
           </h2>
-          <p style={{
-            fontSize: 13, color: T.inkLight, marginTop: 10, letterSpacing: 1,
-            opacity: visible ? 1 : 0, animation: visible ? "fadeUp 0.8s 0.4s ease both" : "none",
-          }}>
-            Vivan Venue · Karnal, Haryana
-          </p>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginTop:16,opacity:visible?1:0,animation:visible?"fadeIn 0.8s 0.2s ease both":"none"}}>
+            <Sprig opacity={0.45}/><RoseBloom size={18} opacity={0.6}/><Sprig flip opacity={0.45}/>
+          </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          {events.map((day, di) => <EventCard key={di} day={day} di={di} visible={visible} />)}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── PHOTO STRIP ──────────────────────────────────────────────────────────────
-// Varied heights, subtle rotations, captions — an editorial gallery, not a component tray
-const GALLERY_PHOTOS = [
-  { src: PHOTO_NEW1, caption: "Roka, 2026", rotate: -1.8, h: 320 },
-  { src: PHOTO_FUN,  caption: "Shrishti",   rotate: 1.4,  h: 380 },
-  { src: PHOTO_FORMAL, caption: "Together", rotate: -0.8, h: 290 },
-  { src: PHOTO_NEW2, caption: "Manan",      rotate: 2.1,  h: 350 },
-];
-
-function PhotoStrip() {
-  const [ref, visible] = useReveal(0.08);
-  return (
-    <section id="gallery" ref={ref} className="grain" style={{
-      background: T.paperDeep, padding: "80px 0 72px", overflow: "hidden",
-    }}>
-      <div style={{ textAlign: "center", marginBottom: 40, padding: "0 24px" }}>
-        <Eyebrow visible={visible}>Manan &amp; Shrishti</Eyebrow>
-        <h2 className="display-italic" style={{
-          fontSize: "clamp(24px, 5vw, 40px)", fontWeight: 400, color: T.ink,
-          opacity: visible ? 1 : 0, animation: visible ? "fadeUp 0.8s 0.1s ease both" : "none",
-        }}>
-          A glimpse of us
-        </h2>
-      </div>
-
-      {/* Photos: horizontal scroll on mobile, inline-flex on desktop */}
-      <div style={{
-        display: "flex", gap: 20, padding: "24px 40px 12px",
-        overflowX: "auto", alignItems: "flex-end",
-        scrollSnapType: "x mandatory",
-        WebkitOverflowScrolling: "touch",
-      }}>
-        {GALLERY_PHOTOS.map((p, i) => (
-          <div
-            key={i}
-            className="photo-card"
-            style={{
-              flex: "0 0 auto",
-              width: "clamp(180px, 22vw, 260px)",
-              transform: `rotate(${p.rotate}deg)`,
-              opacity: visible ? 1 : 0,
-              animation: visible ? `scaleIn 0.65s ${i * 0.1}s ease both` : "none",
-              scrollSnapAlign: "start",
-            }}
-          >
-            {/* Polaroid-style card */}
-            <div style={{
-              background: "#fff",
-              padding: "8px 8px 36px",
-              boxShadow: "0 4px 20px rgba(42, 33, 24, 0.12), 0 1px 4px rgba(42, 33, 24, 0.06)",
-            }}>
-              <img
-                src={p.src} alt={p.caption}
-                style={{ width: "100%", height: p.h, objectFit: "cover", objectPosition: "top", display: "block" }}
-                loading="lazy"
-              />
-              <div className="display-italic" style={{
-                textAlign: "center", marginTop: 10, fontSize: 13,
-                color: T.inkMid, fontWeight: 400,
-              }}>
-                {p.caption}
-              </div>
+        {EVENTS.map((day,di)=>(
+          <div key={di} style={{marginBottom:52}}>
+            <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:24,opacity:visible?1:0,animation:visible?`fadeUp 0.7s ${0.2+di*0.08}s ease both`:"none"}}>
+              <div style={{height:1,flex:1,background:`linear-gradient(to right,transparent,${T.border})`}}/>
+              <div style={{fontSize:10,letterSpacing:4,color:T.rose,textTransform:"uppercase",whiteSpace:"nowrap",fontFamily:"Inter,sans-serif"}}>{day.day}</div>
+              <div style={{height:1,flex:1,background:`linear-gradient(to left,transparent,${T.border})`}}/>
+            </div>
+            <div style={{position:"relative",paddingLeft:26}}>
+              <div style={{position:"absolute",left:4,top:6,bottom:6,width:1,background:`linear-gradient(to bottom,${T.roseLight},transparent)`}}/>
+              {day.items.map((ev,ei)=>(
+                <div key={ei} style={{position:"relative"}}>
+                  <div style={{position:"absolute",left:-22,top:26,width:10,height:10,borderRadius:"50%",background:T.rose,boxShadow:`0 0 0 3px ${T.roseLight}`}}/>
+                  <EventCard ev={ev} visible={visible} delay={0.28+di*0.08+ei*0.07}/>
+                </div>
+              ))}
             </div>
           </div>
         ))}
@@ -822,283 +909,305 @@ function PhotoStrip() {
   );
 }
 
-// ─── RSVP ─────────────────────────────────────────────────────────────────────
-function RSVP() {
-  const [ref, visible] = useReveal(0.05);
-  const [step, setStep] = useState(0);
-  const [form, setForm] = useState({ name: "", phone: "", email: "", events: [], guests: "1", message: "" });
-  const [status, setStatus] = useState("idle");
+// ─── VENUE ────────────────────────────────────────────────────────────────────
+function Venue() {
+  const [ref,visible]=useReveal(0.07);
+  return (
+    <section id="venue" ref={ref} style={{background:"#fff",padding:"96px 24px",position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",left:-60,top:"50%",transform:"translateY(-50%)",opacity:0.07,pointerEvents:"none"}}>
+        <BotanicalFrame width={380} height={560}/>
+      </div>
+      <div style={{maxWidth:800,margin:"0 auto",position:"relative",zIndex:1}}>
+        <div style={{textAlign:"center",marginBottom:48}}>
+          <div style={{fontSize:9,letterSpacing:5,color:T.sage,textTransform:"uppercase",marginBottom:12,opacity:visible?1:0,animation:visible?"fadeUp 0.6s ease both":"none"}}>
+            Find your way to us
+          </div>
+          <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(26px,5vw,44px)",color:T.ink,fontWeight:400,fontStyle:"italic",opacity:visible?1:0,animation:visible?"fadeUp 0.8s 0.1s ease both":"none"}}>
+            Vivan Resort, Karnal
+          </h2>
+          <p style={{fontSize:14,color:T.inkMuted,lineHeight:1.9,maxWidth:380,margin:"12px auto 0",fontWeight:300,opacity:visible?1:0,animation:visible?"fadeUp 0.8s 0.2s ease both":"none"}}>
+            Set amid lush grounds in the heart of Haryana — our home for two unforgettable days.
+          </p>
+        </div>
 
-  const EVENT_OPTIONS = [
-    { label: "Mehendi",              sub: "Day 1 · Afternoon", icon: "🌿" },
-    { label: "Sagan + Ring Ceremony",sub: "Day 1 · Evening",   icon: "💍" },
-    { label: "Ladies Sangeet",       sub: "Day 1 · Evening",   icon: "🎶" },
-    { label: "Haldi",                sub: "Day 2 · Morning",   icon: "🌼" },
-    { label: "Wedding Ceremony",     sub: "Day 2 · Evening",   icon: "🔥" },
-  ];
+        <div className="map-frame" style={{marginBottom:36,opacity:visible?1:0,animation:visible?"scaleIn 0.9s 0.25s ease both":"none"}}>
+          <iframe title="Vivan Resort Karnal" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3488.563492026967!2d76.97659!3d29.6856!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390e4571dd0bc3b1%3A0x7f9c3db0b1234567!2sVivan%20Resort%20Karnal!5e0!3m2!1sen!2sin!4v1234567890" width="100%" height="300" style={{border:"none",display:"block"}} loading="lazy"/>
+        </div>
 
-  const toggleEvent = (ev) => {
-    setForm(f => ({
-      ...f,
-      events: f.events.includes(ev) ? f.events.filter(e => e !== ev) : [...f.events, ev],
-    }));
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:14,marginBottom:28,opacity:visible?1:0,animation:visible?"fadeUp 0.8s 0.4s ease both":"none"}}>
+          {[
+            {icon:"📍",title:"Address",lines:["Vivan Resort","Karnal, Haryana 132001"],link:{label:"Open in Maps",href:"https://share.google/bzxZ0WW2HHCV6rXFQ"}},
+            {icon:"✈️",title:"Nearest Airports",lines:["Delhi IGI — 2.5 hrs","Chandigarh — 2 hrs"]},
+            {icon:"🚗",title:"By Road",lines:["NH-44 from Delhi","Karnal exit, Chandigarh highway"]},
+            {icon:"🌐",title:"Venue",lines:["vivanresort.com"],link:{label:"Visit website",href:"https://www.vivanresort.com"}},
+          ].map((c,i)=>(
+            <div key={i} style={{background:T.parchment,borderRadius:14,padding:"18px 20px",border:`1px solid ${T.borderLight}`}}>
+              <div style={{fontSize:20,marginBottom:8}}>{c.icon}</div>
+              <div style={{fontSize:9,letterSpacing:3,color:T.sage,textTransform:"uppercase",marginBottom:6}}>{c.title}</div>
+              {c.lines.map((l,j)=><div key={j} style={{fontSize:13,color:T.inkLight,lineHeight:1.8}}>{l}</div>)}
+              {c.link&&<a href={c.link.href} target="_blank" rel="noopener noreferrer" style={{display:"inline-block",marginTop:6,fontSize:11,color:T.rose,textDecoration:"none",letterSpacing:1}}>{c.link.label} →</a>}
+            </div>
+          ))}
+        </div>
+        <div style={{textAlign:"center",fontSize:13,color:T.inkMuted,lineHeight:2,fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",opacity:visible?1:0,animation:visible?"fadeUp 0.8s 0.55s ease both":"none"}}>
+          Outstation guests — let us know in the RSVP and we'll take care of your stay.
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── SCRAPBOOK ────────────────────────────────────────────────────────────────
+const PHOTOS=[
+  {src:SCRAP_03,caption:"the night it all changed",rotate:-3.5},
+  {src:PHOTO_FORMAL,caption:"Roka, February 2026",rotate:2.2},
+  {src:SCRAP_04,caption:"where it began",rotate:-1.8},
+  {src:SCRAP_01,caption:"an evening to remember",rotate:2.5},
+  {src:PHOTO_FUN,caption:"the photoshoot laugh",rotate:1.5},
+  {src:SCRAP_02,caption:"somewhere beautiful",rotate:-4.0},
+  {src:SCRAP_05,caption:"celebrating together",rotate:2.8},
+  {src:PHOTO_NEW1,caption:"all dressed up",rotate:3.5},
+];
+
+function Scrapbook() {
+  const [ref,visible]=useReveal(0.04);
+  return (
+    <section id="gallery" ref={ref} style={{background:T.mist,padding:"88px 24px 80px",position:"relative",overflow:"hidden"}}>
+      <div style={{maxWidth:920,margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:52}}>
+          <div style={{fontSize:9,letterSpacing:5,color:T.sage,textTransform:"uppercase",marginBottom:12,fontWeight:500,opacity:visible?1:0,animation:visible?"fadeUp 0.6s ease both":"none"}}>
+            Before September
+          </div>
+          <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(26px,5vw,44px)",color:T.ink,fontWeight:400,fontStyle:"italic",opacity:visible?1:0,animation:visible?"fadeUp 0.8s 0.1s ease both":"none"}}>
+            A few pages from our story
+          </h2>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(185px,1fr))",gap:"32px 20px",alignItems:"start"}}>
+          {PHOTOS.map((p,i)=>(
+            <div key={i} style={{opacity:visible?1:0,animation:visible?`scaleIn 0.6s ${i*0.05}s ease both`:"none",display:"flex",justifyContent:"center"}}>
+              <div className="polaroid" style={{transform:`rotate(${p.rotate}deg)`,maxWidth:185}}>
+                <img src={p.src} alt={p.caption} style={{width:"100%",aspectRatio:"4/5",objectFit:"cover",display:"block",filter:"contrast(1.02) saturate(0.92)"}} loading="lazy" onError={e=>{e.currentTarget.style.minHeight="150px";e.currentTarget.style.background=T.blush;}}/>
+                <div className="polaroid-caption">{p.caption}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── SCRATCH CARD ─────────────────────────────────────────────────────────────
+function ScratchCard() {
+  const canvasRef=useRef(null);
+  const [revealed,setRevealed]=useState(false);
+  const [scratching,setScratching]=useState(false);
+  useEffect(()=>{
+    const canvas=canvasRef.current; if(!canvas) return;
+    const ctx=canvas.getContext("2d");
+    const g=ctx.createLinearGradient(0,0,canvas.width,0);
+    g.addColorStop(0,"#C9897A"); g.addColorStop(0.5,"#D4B483"); g.addColorStop(1,"#C9897A");
+    ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="rgba(255,240,236,0.22)";
+    for(let i=0;i<canvas.width;i+=6){for(let j=0;j<canvas.height;j+=6){if(Math.random()>0.55) ctx.fillRect(i,j,3,3);}}
+    ctx.fillStyle="#fff"; ctx.font="bold 14px -apple-system,sans-serif";
+    ctx.textAlign="center"; ctx.fillText("✦  scratch here  ✦",canvas.width/2,canvas.height/2+5);
+  },[]);
+  const scratch=(x,y)=>{
+    const canvas=canvasRef.current; if(!canvas) return;
+    const ctx=canvas.getContext("2d");
+    const rect=canvas.getBoundingClientRect();
+    const cx=(x-rect.left)*(canvas.width/rect.width);
+    const cy=(y-rect.top)*(canvas.height/rect.height);
+    ctx.globalCompositeOperation="destination-out";
+    ctx.beginPath(); ctx.arc(cx,cy,26,0,Math.PI*2); ctx.fill();
+    const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+    let t=0; for(let i=3;i<data.length;i+=4){if(data[i]===0) t++;}
+    if(t/(canvas.width*canvas.height)*100>45&&!revealed) setRevealed(true);
   };
+  const handleMouseMove=(e)=>{ if(scratching) scratch(e.clientX,e.clientY); };
+  const handleTouch=(e)=>{ e.preventDefault(); scratch(e.touches[0].clientX,e.touches[0].clientY); };
+  return (
+    <div style={{position:"relative",width:290,height:120,margin:"0 auto",borderRadius:14,overflow:"hidden",boxShadow:"0 4px 16px rgba(44,36,32,0.12)"}}>
+      <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 20px",background:T.ivory}}>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:20,color:T.rose,marginBottom:6,lineHeight:1.3}}>You just made our day more beautiful.</div>
+        <div style={{fontSize:12,color:T.inkMuted}}>See you in September 🌸</div>
+      </div>
+      <canvas ref={canvasRef} width={580} height={240}
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",borderRadius:14,opacity:revealed?0:1,transition:"opacity 0.5s ease 0.3s",touchAction:"none",cursor:"crosshair"}}
+        onMouseDown={()=>setScratching(true)} onMouseUp={()=>setScratching(false)} onMouseLeave={()=>setScratching(false)}
+        onMouseMove={handleMouseMove} onTouchMove={handleTouch}/>
+    </div>
+  );
+}
 
-  const canNext = () => {
-    if (step === 0) return form.name.trim().length > 1 && form.phone.trim().length > 6;
-    if (step === 1) return form.events.length > 0;
+// ─── RSVP ─────────────────────────────────────────────────────────────────────
+const EVENT_OPTIONS=[
+  {label:"Haldi",icon:"🌿",sub:"Day 1 · 11 AM"},
+  {label:"Ring Ceremony & Sangeet",icon:"💍",sub:"Day 1 · 7 PM"},
+  {label:"Ghadi Ghadoli",icon:"🪔",sub:"Day 2 · 11 AM"},
+  {label:"Sehra Bandi",icon:"👑",sub:"Day 2 · 2 PM"},
+  {label:"Baraat",icon:"🐎",sub:"Day 2 · 4 PM"},
+  {label:"Reception",icon:"🥂",sub:"Day 2 · 8 PM"},
+];
+const ACCOM_OPTIONS=[
+  {label:"No room needed",sub:"I'm sorted, thank you"},
+  {label:"Single room",sub:"Just for me"},
+  {label:"Double sharing",sub:"Sharing with someone"},
+  {label:"Family room",sub:"Coming with family"},
+];
+const STEP_LABELS=["You","Events","Stay","Message"];
+
+function RSVP() {
+  const [ref,visible]=useReveal(0.06);
+  const [step,setStep]=useState(0);
+  const [status,setStatus]=useState("idle");
+  const [form,setForm]=useState({name:"",phone:"",email:"",events:[],guests:"1",accommodation:"",message:""});
+
+  const toggle=(label)=>setForm(f=>({...f,events:f.events.includes(label)?f.events.filter(e=>e!==label):[...f.events,label]}));
+  const canNext=()=>{
+    if(step===0) return form.name.trim().length>1&&form.phone.trim().length>6;
+    if(step===1) return form.events.length>0;
     return true;
   };
+  const goNext=()=>{ if(step<3) setStep(s=>s+1); else submit(); };
 
-  const goNext = () => { if (step < 2) setStep(s => s + 1); else submit(); };
-  const goBack = () => { if (step > 0) setStep(s => s - 1); };
-
-  const submit = async () => {
-    if (!form.name.trim() || !form.phone.trim()) return;
+  const submit=async()=>{
     setStatus("sending");
-    try {
-      await fetch("https://hqgrsurxjkpvhsjdnvfz.supabase.co/rest/v1/rsvps", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
-          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          "Prefer": "return=minimal",
-        },
-        body: JSON.stringify({
-          name: form.name, phone: form.phone, email: form.email,
-          events: form.events, guest_count: parseInt(form.guests), message: form.message,
-        }),
-      });
+    try{
+      const res=await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/rsvps`,
+        { method:"POST",
+          headers:{"Content-Type":"application/json","apikey":import.meta.env.VITE_SUPABASE_ANON_KEY,"Authorization":`Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,"Prefer":"return=minimal"},
+          body:JSON.stringify({name:form.name.trim(),phone:form.phone.trim(),email:form.email.trim()||null,events:form.events,guest_count:parseInt(form.guests),accommodation:form.accommodation||null,message:form.message.trim()||null}),
+        }
+      );
+      if(!res.ok){const b=await res.text();console.error("RSVP error:",res.status,b);}
       setStatus("done");
-    } catch (e) { setStatus("done"); }
+    }catch(err){console.error(err);setStatus("done");}
   };
 
-  const inp = {
-    width: "100%", padding: "13px 16px", borderRadius: 2,
-    fontSize: 14, fontFamily: "'DM Sans', sans-serif",
-  };
+  const inp={width:"100%",padding:"13px 16px",borderRadius:10,fontSize:14,fontFamily:"inherit"};
 
-  const STEPS = ["You", "Events", "Message"];
-
-  const stepContent = [
-    // Step 0: who are you
+  const steps=[
     <div key={0}>
-      <div className="display-italic" style={{ fontSize: 26, color: T.ink, textAlign: "center", marginBottom: 6 }}>
-        Let us know who's coming
-      </div>
-      <p style={{ textAlign: "center", color: T.inkLight, fontSize: 13.5, lineHeight: 1.8, marginBottom: 24 }}>
-        We'd love to put your name on our list.
-      </p>
-      {[
-        { label: "Your name *",          field: "name",  type: "text",  ph: "Full name" },
-        { label: "Phone *",              field: "phone", type: "tel",   ph: "+91 98765 43210" },
-        { label: "Email (optional)",     field: "email", type: "email", ph: "For updates closer to the date" },
-      ].map(({ label, field, type, ph }) => (
-        <div key={field} style={{ marginBottom: 14 }}>
-          <label style={{ fontSize: 9, color: T.inkFaint, display: "block", marginBottom: 5, letterSpacing: 2.5, textTransform: "uppercase" }}>
-            {label}
-          </label>
-          <input
-            className="rsvp-input"
-            style={inp}
-            type={type}
-            placeholder={ph}
-            value={form[field]}
-            onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
-          />
+      <div style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic",fontSize:30,color:T.ink,textAlign:"center",marginBottom:6}}>Let us know who's coming</div>
+      <p style={{textAlign:"center",color:T.inkMuted,fontSize:13.5,lineHeight:1.8,marginBottom:24,fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic"}}>We'd love to put your name on our list.</p>
+      {[{label:"Your name *",field:"name",type:"text",ph:"Full name"},{label:"Phone *",field:"phone",type:"tel",ph:"+91 98765 43210"},{label:"Email (optional)",field:"email",type:"email",ph:"For updates closer to the date"}].map(({label,field,type,ph})=>(
+        <div key={field} style={{marginBottom:12}}>
+          <label style={{fontSize:9,fontWeight:500,color:T.inkMuted,display:"block",marginBottom:5,letterSpacing:2,textTransform:"uppercase"}}>{label}</label>
+          <input className="rsvp-input" style={inp} type={type} placeholder={ph} value={form[field]} onChange={e=>setForm(f=>({...f,[field]:e.target.value}))}/>
         </div>
       ))}
     </div>,
 
-    // Step 1: which events
     <div key={1}>
-      <div className="display-italic" style={{ fontSize: 26, color: T.ink, textAlign: "center", marginBottom: 6 }}>
-        Which events will you join?
-      </div>
-      <p style={{ textAlign: "center", color: T.inkLight, fontSize: 13.5, lineHeight: 1.8, marginBottom: 20 }}>
-        Select everything you're planning to attend.
-      </p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-        {EVENT_OPTIONS.map(ev => {
-          const checked = form.events.includes(ev.label);
+      <div style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic",fontSize:30,color:T.ink,textAlign:"center",marginBottom:6}}>Which events will you join?</div>
+      <p style={{textAlign:"center",color:T.inkMuted,fontSize:13.5,lineHeight:1.8,marginBottom:20,fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic"}}>Select everything you're planning to attend.</p>
+      <div style={{display:"flex",flexDirection:"column",gap:9}}>
+        {EVENT_OPTIONS.map(ev=>{
+          const checked=form.events.includes(ev.label);
           return (
-            <div
-              key={ev.label}
-              className={`check-option${checked ? " selected" : ""}`}
-              onClick={() => toggleEvent(ev.label)}
-              style={{
-                display: "flex", alignItems: "center", gap: 12,
-                padding: "13px 15px", borderRadius: 2,
-              }}
-            >
-              <div style={{
-                width: 18, height: 18, borderRadius: 2, flexShrink: 0,
-                border: `1.5px solid ${checked ? T.copper : T.rule}`,
-                background: checked ? T.copper : "transparent",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "all 0.2s",
-              }}>
-                {checked && <span style={{ color: "#fff", fontSize: 10, fontWeight: 700 }}>✓</span>}
+            <div key={ev.label} className={`rsvp-option${checked?" selected":""}`} onClick={()=>toggle(ev.label)}
+              style={{display:"flex",alignItems:"center",gap:12,padding:"13px 15px",borderRadius:10,background:checked?T.blush:"#fff"}}>
+              <div style={{width:20,height:20,borderRadius:6,flexShrink:0,border:`1.5px solid ${checked?T.rose:T.border}`,background:checked?T.rose:"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"}}>
+                {checked&&<span style={{color:"#fff",fontSize:11,fontWeight:700}}>✓</span>}
               </div>
-              <span style={{ fontSize: 16, opacity: 0.8 }}>{ev.icon}</span>
+              <span style={{fontSize:16}}>{ev.icon}</span>
               <div>
-                <div style={{ fontSize: 13.5, color: checked ? T.ink : T.inkMid, fontWeight: checked ? 500 : 400 }}>
-                  {ev.label}
-                </div>
-                <div style={{ fontSize: 10.5, color: T.inkFaint, marginTop: 1 }}>{ev.sub}</div>
+                <div style={{fontSize:13.5,color:checked?T.ink:T.inkLight,fontWeight:checked?500:400}}>{ev.label}</div>
+                <div style={{fontSize:10.5,color:T.inkFaint,marginTop:1}}>{ev.sub}</div>
               </div>
             </div>
           );
         })}
       </div>
-      <div style={{ marginTop: 20, display: "flex", gap: 12, alignItems: "center" }}>
-        <label style={{ fontSize: 9, color: T.inkFaint, letterSpacing: 2.5, textTransform: "uppercase", whiteSpace: "nowrap" }}>
-          Guests coming
-        </label>
-        <select
-          className="rsvp-input"
-          style={{ ...inp, flex: 1, cursor: "pointer" }}
-          value={form.guests}
-          onChange={e => setForm(f => ({ ...f, guests: e.target.value }))}
-        >
-          {["1", "2", "3", "4", "5+"].map(n => <option key={n} value={n}>{n} guest{n !== "1" ? "s" : ""}</option>)}
+    </div>,
+
+    <div key={2}>
+      <div style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic",fontSize:30,color:T.ink,textAlign:"center",marginBottom:6}}>Your stay</div>
+      <p style={{textAlign:"center",color:T.inkMuted,fontSize:13.5,lineHeight:1.8,marginBottom:20,fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic"}}>Let us know and we'll make sure you're comfortable.</p>
+      <div style={{marginBottom:20}}>
+        <label style={{fontSize:9,fontWeight:500,color:T.inkMuted,display:"block",marginBottom:8,letterSpacing:2,textTransform:"uppercase"}}>Accommodation needed</label>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {ACCOM_OPTIONS.map(a=>(
+            <div key={a.label} className={`rsvp-option${form.accommodation===a.label?" selected":""}`} onClick={()=>setForm(f=>({...f,accommodation:a.label}))}
+              style={{padding:"13px 15px",borderRadius:10,background:form.accommodation===a.label?T.blush:"#fff"}}>
+              <div style={{fontSize:13.5,color:form.accommodation===a.label?T.ink:T.inkLight,fontWeight:form.accommodation===a.label?500:400}}>{a.label}</div>
+              <div style={{fontSize:10.5,color:T.inkFaint,marginTop:1}}>{a.sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div>
+        <label style={{fontSize:9,fontWeight:500,color:T.inkMuted,display:"block",marginBottom:6,letterSpacing:2,textTransform:"uppercase"}}>Total guests (including yourself)</label>
+        <select className="rsvp-input" style={{...inp,cursor:"pointer"}} value={form.guests} onChange={e=>setForm(f=>({...f,guests:e.target.value}))}>
+          {["1","2","3","4","5+"].map(n=><option key={n} value={n}>{n} {n==="1"?"guest":"guests"}</option>)}
         </select>
       </div>
     </div>,
 
-    // Step 2: message
-    <div key={2} style={{ textAlign: "center" }}>
-      <div className="display-italic" style={{ fontSize: 26, color: T.ink, marginBottom: 6 }}>
-        Anything else?
-      </div>
-      <p style={{ color: T.inkLight, fontSize: 13.5, lineHeight: 1.8, marginBottom: 20 }}>
-        Dietary preferences, a warm message, anything we should know.
-      </p>
-      <textarea
-        className="rsvp-input"
-        style={{ ...inp, resize: "none", minHeight: 120, textAlign: "left" }}
-        rows={5}
-        placeholder="Write something warm…"
-        value={form.message}
-        onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-      />
+    <div key={3} style={{textAlign:"center"}}>
+      <div style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic",fontSize:30,color:T.ink,marginBottom:6}}>Anything else?</div>
+      <p style={{color:T.inkMuted,fontSize:13.5,lineHeight:1.8,marginBottom:20,fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic"}}>Dietary preferences, a message for us,<br/>anything we should know.</p>
+      <textarea className="rsvp-input" style={{...inp,resize:"none",minHeight:120,textAlign:"left"}} rows={5} placeholder="Write something warm… 🌸" value={form.message} onChange={e=>setForm(f=>({...f,message:e.target.value}))}/>
     </div>,
   ];
 
   return (
-    <section id="rsvp" ref={ref} className="grain" style={{
-      background: T.paperDeep, padding: "88px 24px 104px", position: "relative",
-    }}>
-      <div style={{ maxWidth: 520, margin: "0 auto" }}>
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <Eyebrow visible={visible}>Your place at our table</Eyebrow>
-          <h2 className="display-italic" style={{
-            fontSize: "clamp(26px, 5vw, 44px)", fontWeight: 400, color: T.ink,
-            lineHeight: 1.2, marginBottom: 10,
-            opacity: visible ? 1 : 0, animation: visible ? "fadeUp 0.8s 0.1s ease both" : "none",
-          }}>
+    <section id="rsvp" ref={ref} style={{background:T.blush,padding:"96px 24px 112px",position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",right:-80,top:"50%",transform:"translateY(-50%)",opacity:0.1,pointerEvents:"none"}}>
+        <BotanicalFrame width={440} height={600}/>
+      </div>
+      <div style={{maxWidth:520,margin:"0 auto",position:"relative",zIndex:1}}>
+        <div style={{textAlign:"center",marginBottom:52}}>
+          <div style={{fontSize:9,letterSpacing:5,color:T.sage,textTransform:"uppercase",marginBottom:12,fontWeight:500,opacity:visible?1:0,animation:visible?"fadeUp 0.6s ease both":"none"}}>
+            Your place at our table
+          </div>
+          <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(26px,5vw,44px)",color:T.ink,fontWeight:400,fontStyle:"italic",lineHeight:1.2,marginBottom:10,opacity:visible?1:0,animation:visible?"fadeUp 0.8s 0.1s ease both":"none"}}>
             You're not just invited.
           </h2>
-          <p style={{
-            fontFamily: "'Playfair Display', serif", fontStyle: "italic",
-            fontSize: "clamp(15px, 2.5vw, 19px)", color: T.copper, fontWeight: 400,
-            opacity: visible ? 1 : 0, animation: visible ? "fadeUp 0.8s 0.2s ease both" : "none",
-          }}>
+          <p style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:"clamp(15px,2.5vw,20px)",color:T.rose,fontWeight:400,opacity:visible?1:0,animation:visible?"fadeUp 0.8s 0.2s ease both":"none"}}>
             You're helping us create the most beautiful celebration of our lives.
           </p>
         </div>
 
-        {status === "done" ? (
-          <div style={{
-            textAlign: "center", padding: "56px 32px",
-            background: T.canvas, border: `1px solid ${T.ruleFaint}`,
-            borderRadius: 3, animation: "scaleIn 0.7s ease both",
-            boxShadow: "0 4px 24px rgba(42, 33, 24, 0.07)",
-          }}>
-            <div style={{ fontSize: 44, marginBottom: 20, animation: "floatY2 3s ease-in-out infinite" }}>🌸</div>
-            <h3 className="display-italic" style={{ fontSize: 28, fontWeight: 400, color: T.ink, marginBottom: 10 }}>
-              We can't wait to see you.
-            </h3>
-            <p style={{ color: T.inkLight, fontSize: 14, lineHeight: 2 }}>
-              Your RSVP is confirmed. We'll be in touch with details closer to the date.<br />
-              See you in Karnal. ✦
+        {status==="done" ? (
+          <div style={{textAlign:"center",padding:"52px 32px",background:"#fff",borderRadius:24,border:`1px solid ${T.borderLight}`,boxShadow:"0 4px 24px rgba(44,36,32,0.08)",animation:"scaleIn 0.7s ease both"}}>
+            <div style={{fontSize:44,marginBottom:20,animation:"floatY2 3s ease-in-out infinite"}}>🌸</div>
+            <h3 style={{fontFamily:"'DM Serif Display',serif",fontStyle:"italic",fontSize:28,color:T.ink,fontWeight:400,marginBottom:10}}>We can't wait to see you.</h3>
+            <p style={{color:T.inkMuted,fontSize:14,lineHeight:2,marginBottom:28,fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic"}}>
+              Your RSVP is confirmed. We'll be in touch closer to the date. See you in Karnal. ✦
             </p>
+            <ScratchCard/>
           </div>
         ) : (
-          <div style={{
-            background: T.canvas, borderRadius: 3, padding: "36px 28px",
-            border: `1px solid ${T.ruleFaint}`,
-            boxShadow: "0 4px 24px rgba(42, 33, 24, 0.07)",
-            opacity: visible ? 1 : 0, animation: visible ? "scaleIn 0.8s 0.3s ease both" : "none",
-          }}>
+          <div style={{background:"#fff",borderRadius:24,padding:"36px 28px",border:`1px solid ${T.borderLight}`,boxShadow:"0 4px 24px rgba(44,36,32,0.08)",opacity:visible?1:0,animation:visible?"scaleIn 0.8s 0.3s ease both":"none"}}>
             {/* Step indicator */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 36 }}>
-              {STEPS.map((label, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{
-                      width: 26, height: 26, borderRadius: "50%",
-                      border: `1.5px solid ${i <= step ? T.copper : T.rule}`,
-                      background: i < step ? T.copper : "transparent",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 10, fontWeight: 600,
-                      color: i < step ? "#fff" : i === step ? T.copper : T.inkFaint,
-                      transition: "all 0.3s",
-                      margin: "0 auto",
-                    }}>
-                      {i < step ? "✓" : i + 1}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:36}}>
+              {STEP_LABELS.map((label,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:6}}>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{width:28,height:28,borderRadius:"50%",background:i<step?T.rose:"transparent",border:`1.5px solid ${i<=step?T.rose:T.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:600,color:i<step?"#fff":i===step?T.rose:T.inkFaint,transition:"all 0.28s"}}>
+                      {i<step?"✓":i+1}
                     </div>
-                    <div style={{
-                      fontSize: 8, color: i === step ? T.copper : T.inkFaint,
-                      marginTop: 3, letterSpacing: 1.5, textTransform: "uppercase",
-                    }}>
-                      {label}
-                    </div>
+                    <div style={{fontSize:8,color:i===step?T.rose:T.inkFaint,marginTop:3,letterSpacing:1,textTransform:"uppercase"}}>{label}</div>
                   </div>
-                  {i < STEPS.length - 1 && (
-                    <div style={{
-                      width: 24, height: "0.75px",
-                      background: i < step ? T.copper : T.rule,
-                      marginBottom: 16, transition: "background 0.3s",
-                    }} />
-                  )}
+                  {i<STEP_LABELS.length-1&&<div style={{width:18,height:1,background:i<step?T.rose:T.border,marginBottom:16,transition:"background 0.28s"}}/>}
                 </div>
               ))}
             </div>
 
-            <div style={{ minHeight: 260 }}>{stepContent[step]}</div>
+            <div style={{minHeight:260}}>{steps[step]}</div>
 
-            <div style={{ display: "flex", gap: 10, marginTop: 28 }}>
-              {step > 0 && (
-                <button
-                  onClick={goBack}
-                  style={{
-                    flex: 1, padding: "13px", background: "transparent",
-                    color: T.inkLight, border: `1.5px solid ${T.rule}`,
-                    borderRadius: 2, fontSize: 12, fontWeight: 500, cursor: "pointer",
-                    fontFamily: "'DM Sans', sans-serif", letterSpacing: 1, transition: "all 0.2s",
-                  }}
-                >
+            <div style={{display:"flex",gap:10,marginTop:28}}>
+              {step>0&&(
+                <button onClick={()=>setStep(s=>s-1)} style={{flex:1,padding:"14px",background:"transparent",color:T.inkMuted,border:`1.5px solid ${T.border}`,borderRadius:12,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"inherit",letterSpacing:1,transition:"all 0.2s"}}>
                   ← Back
                 </button>
               )}
-              <button
-                className="rsvp-btn"
-                onClick={goNext}
-                disabled={!canNext() || status === "sending"}
-                style={{
-                  flex: 2, padding: "13px",
-                  background: canNext() ? T.copper : T.ruleFaint,
-                  color: canNext() ? "#fff" : T.inkFaint,
-                  border: "none", borderRadius: 2,
-                  fontSize: 10, fontWeight: 500, cursor: canNext() ? "pointer" : "not-allowed",
-                  fontFamily: "'DM Sans', sans-serif", letterSpacing: 3, textTransform: "uppercase",
-                  transition: "all 0.25s",
-                }}
-              >
-                {status === "sending" ? "Sending…" : step === 2 ? "Confirm RSVP" : "Continue →"}
+              <button onClick={goNext} disabled={!canNext()||status==="sending"} style={{flex:2,padding:"14px",background:canNext()?T.rose:"#EDE0D4",color:canNext()?"#fff":T.inkFaint,border:"none",borderRadius:12,fontSize:13,fontWeight:600,cursor:canNext()?"pointer":"not-allowed",fontFamily:"inherit",letterSpacing:1.5,textTransform:"uppercase",transition:"all 0.22s",boxShadow:canNext()?"0 4px 14px rgba(184,116,106,0.3)":"none"}}>
+                {status==="sending"?"Sending…":step===3?"Confirm RSVP 🌸":"Continue →"}
               </button>
             </div>
           </div>
@@ -1108,73 +1217,78 @@ function RSVP() {
   );
 }
 
+// ─── CONTACT STRIP ────────────────────────────────────────────────────────────
+function ContactStrip() {
+  return (
+    <div style={{background:T.sageLight,padding:"36px 24px",textAlign:"center",borderTop:`1px solid ${T.border}`}}>
+      <div style={{fontSize:9,letterSpacing:4,color:T.sageDark,textTransform:"uppercase",marginBottom:16,fontWeight:500}}>Questions? We're here</div>
+      <div style={{display:"flex",justifyContent:"center",gap:28,flexWrap:"wrap"}}>
+        {[
+          {href:"mailto:mananshrishti@gmail.com",label:"mananshrishti@gmail.com"},
+          {href:"https://wa.me/+919991270015",label:"WhatsApp us",target:"_blank"},
+        ].map((l,i)=>(
+          <a key={i} href={l.href} target={l.target||"_self"} rel="noopener noreferrer"
+            style={{fontSize:13.5,color:T.sageDark,textDecoration:"none",fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",transition:"color 0.2s"}}
+            onMouseEnter={e=>e.currentTarget.style.color=T.roseDark}
+            onMouseLeave={e=>e.currentTarget.style.color=T.sageDark}>
+            {l.label}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── FOOTER ───────────────────────────────────────────────────────────────────
 function Footer() {
   return (
-    <footer className="grain" style={{
-      background: T.paper, padding: "64px 24px 44px",
-      textAlign: "center", borderTop: `1px solid ${T.ruleFaint}`,
-      position: "relative", overflow: "hidden",
-    }}>
-      {/* Ruling lines as a decorative background element */}
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, pointerEvents: "none", opacity: 0.4 }}>
-        <RulingLines width="100%" count={8} opacity={0.5} />
+    <footer style={{background:T.parchmentDeep,padding:"64px 24px 44px",textAlign:"center",position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",bottom:-80,left:"50%",transform:"translateX(-50%)",pointerEvents:"none",opacity:0.12}}>
+        <BotanicalFrame width={480} height={320}/>
       </div>
-
-      <div style={{ position: "relative", zIndex: 2 }}>
-        <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 20, alignItems: "center" }}>
-          <Sprig opacity={0.45} />
-          <Postmark label="M & S" sub="September 2026" size={72} />
-          <Sprig flip opacity={0.45} />
-        </div>
-
-        <div className="display-italic" style={{ fontSize: 44, fontWeight: 400, color: T.ink, marginBottom: 4, letterSpacing: 0.5 }}>
-          Manan &amp; Shrishti
-        </div>
-        <div style={{ fontSize: 10, color: T.inkMid, marginBottom: 3, letterSpacing: 4, textTransform: "uppercase" }}>
-          September 20 – 21, 2026
-        </div>
-        <div style={{ fontSize: 11, color: T.inkLight, marginBottom: 36 }}>
-          Vivan Venue · Karnal, Haryana
-        </div>
-
-        <Divider />
-
-        <div style={{ marginTop: 28, display: "flex", justifyContent: "center", gap: 0, flexWrap: "wrap" }}>
-          <div style={{ padding: "0 32px", textAlign: "center" }}>
-            <div style={{ fontSize: 8, letterSpacing: 4, color: T.copper, textTransform: "uppercase", marginBottom: 5 }}>Groom's Family</div>
-            <div className="display-italic" style={{ fontSize: 16, color: T.ink }}>The Khurana Family</div>
-          </div>
-          <div style={{ width: "0.75px", background: T.rule, alignSelf: "stretch" }} />
-          <div style={{ padding: "0 32px", textAlign: "center" }}>
-            <div style={{ fontSize: 8, letterSpacing: 4, color: T.copper, textTransform: "uppercase", marginBottom: 5 }}>Bride's Family</div>
-            <div className="display-italic" style={{ fontSize: 16, color: T.ink }}>The Kaushik Family</div>
-          </div>
-        </div>
-
-        <div style={{ marginTop: 32, fontSize: 10, color: T.inkFaint, letterSpacing: 1 }}>
-          Made with love for Manan &amp; Shrishti ✦ 2026
-        </div>
+      <div style={{display:"flex",justifyContent:"center",gap:10,marginBottom:16,opacity:0.6}}>
+        <Sprig opacity={0.5}/><RoseBloom size={26} opacity={0.7}/><Sprig flip opacity={0.5}/>
       </div>
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:48,fontWeight:400,color:T.ink,marginBottom:3,letterSpacing:1}}>Manan & Shrishti</div>
+      <div style={{fontSize:10,color:T.inkMuted,marginBottom:2,letterSpacing:4,textTransform:"uppercase"}}>September 20 – 21, 2026</div>
+      <div style={{fontSize:11,color:T.inkFaint,marginBottom:36}}>Vivan Resort · Karnal, Haryana</div>
+      <div style={{display:"flex",alignItems:"center",gap:14,margin:"0 auto 28px",maxWidth:300}}>
+        <div style={{flex:1,height:"0.5px",background:`linear-gradient(to right,transparent,${T.border})`}}/>
+        <RoseBloom size={14} opacity={0.5}/>
+        <div style={{flex:1,height:"0.5px",background:`linear-gradient(to left,transparent,${T.border})`}}/>
+      </div>
+      <div style={{display:"flex",justifyContent:"center",gap:36,flexWrap:"wrap",marginBottom:36}}>
+        {[["Groom's Family","The Khurana Family"],["Bride's Family","The Kaushik Family"]].map(([role,name],i)=>(
+          <div key={i} style={{textAlign:"center"}}>
+            <div style={{fontSize:8,letterSpacing:4,color:T.sage,textTransform:"uppercase",marginBottom:5}}>{role}</div>
+            <div style={{fontSize:16,color:T.inkLight,fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic"}}>{name}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{fontSize:11,color:T.inkFaint}}>Made with love for Manan &amp; Shrishti ✦ 2026</div>
     </footer>
   );
 }
 
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
 export default function GuestSite() {
+  const [opened,setOpened]=useState(false);
   return (
     <>
       <style>{CSS}</style>
-      <Nav />
-      <div style={{ background: T.paper, minHeight: "100vh" }}>
-        <Hero />
-        <Families />
-        <Rituals />
-        <Events />
-        <PhotoStrip />
-        <RSVP />
-        <Footer />
+      {!opened&&<OpeningSequence onComplete={()=>setOpened(true)}/>}
+      <CursorTrail/>
+      <Nav/>
+      <div style={{background:T.parchment,minHeight:"100vh"}}>
+        <Hero/>
+        <Events/>
+        <RSVP/>
+        <Scrapbook/>
+        <Venue/>
+        <ContactStrip/>
+        <Footer/>
       </div>
+      <MusicPlayer/>
     </>
   );
 }
