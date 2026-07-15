@@ -1083,7 +1083,13 @@ function RSVP() {
     if(step===1) return form.events.length>0;
     return true;
   };
-    const submit=async()=>{
+
+  const goNext=()=>{
+    if(step<3) setStep(s=>s+1);
+    else submit();
+  };
+
+  const submit=async()=>{
     setStatus("sending");
     try{
       const res = await fetch(
@@ -1107,17 +1113,14 @@ function RSVP() {
           }),
         }
       );
-      // 2xx = success; anything else log but still show done to user
-      if(!res.ok){
-        const body = await res.text();
-        console.error("RSVP insert failed:", res.status, body);
-      }
+      if(!res.ok){ const b=await res.text(); console.error("RSVP error:",res.status,b); }
       setStatus("done");
     }catch(err){
       console.error("RSVP fetch error:", err);
-      setStatus("done"); // network error — still show confirmation
+      setStatus("done");
     }
   };
+
   const inp={width:"100%",padding:"14px 16px",borderRadius:12,fontSize:15,fontFamily:"inherit"};
 
   const steps=[
@@ -1243,7 +1246,7 @@ function RSVP() {
                   ← Back
                 </button>
               )}
-              <button onClick={next} disabled={!canNext()||status==="sending"} style={{flex:2,padding:"15px",background:canNext()?T.gold:T.surface3,color:canNext()?T.black:T.gray2,border:"none",borderRadius:14,fontSize:13,fontWeight:700,cursor:canNext()?"pointer":"not-allowed",fontFamily:"inherit",letterSpacing:1.5,textTransform:"uppercase",transition:"all 0.25s"}}>
+              <button onClick={goNext} disabled={!canNext()||status==="sending"} style={{flex:2,padding:"15px",background:canNext()?T.gold:T.surface3,color:canNext()?T.black:T.gray2,border:"none",borderRadius:14,fontSize:13,fontWeight:700,cursor:canNext()?"pointer":"not-allowed",fontFamily:"inherit",letterSpacing:1.5,textTransform:"uppercase",transition:"all 0.25s"}}>
                 {status==="sending"?"Sending…":step===3?"Confirm my RSVP ✦":"Continue →"}
               </button>
             </div>
