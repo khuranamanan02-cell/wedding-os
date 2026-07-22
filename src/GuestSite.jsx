@@ -717,7 +717,7 @@ function Hero() {
                 opacity: ready ? 1 : 0,
                 animation: ready ? "fadeUp 1s 0.4s ease both" : "none",
               }}>
-                Mr. Surender Khurana <br/> <span style={{ fontSize: "0.75em", color: T.rose }}>&amp;</span> Mrs. Neelam Rani
+                Mr. Surinder Khurana <br/> <span style={{ fontSize: "0.75em", color: T.rose }}>&amp;</span> Mrs. Neelam Rani
               </div>
             </div>
 
@@ -765,7 +765,7 @@ function Hero() {
           </div>
 
           <div style={{ fontSize: 11, letterSpacing: 4, color: T.inkMuted, textTransform: "uppercase", marginBottom: 32, opacity: ready ? 1 : 0, animation: ready ? "fadeUp 0.8s 0.9s ease both" : "none" }}>
-            September 19 · 20 · 2026 · Karnal
+            September 20 · 21 · 2026 · Karnal
           </div>
 
           {/* Countdown */}
@@ -880,7 +880,7 @@ function CeremonyIcon({ type, size = 52 }) {
 // ─── EVENTS ───────────────────────────────────────────────────────────────────
 const EVENTS = [
   {
-    day: "Saturday, 19 September 2026", rose: true, items: [
+    day: "Sunday, 20 September 2026", rose: true, items: [
       {
         id: "haldi", icon: "haldi", time: "11:00 AM", name: "Haldi", venue: "Fountain side, Vivan Resort",
         desc: "Turmeric, blessings, and joyful chaos.",
