@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 // import { useState } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 import GuestSite from "./GuestSite.jsx";
 // import PasswordGate from "./PasswordGate.jsx";
 
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="*"    element={<Navigate to="/" replace />} />
       </Routes>
       <SpeedInsights />
+      <Analytics />
     </>
   );
 }
