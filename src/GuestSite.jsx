@@ -717,7 +717,7 @@ function Hero() {
                 opacity: ready ? 1 : 0,
                 animation: ready ? "fadeUp 1s 0.4s ease both" : "none",
               }}>
-                Mr. Surinder Khurana <br/> <span style={{ fontSize: "0.75em", color: T.rose }}>&amp;</span> Mrs. Neelam Rani
+                Mr. Surinder Khurana <br/> <span style={{ fontSize: "0.75em", color: T.rose }}>&amp;</span> Mrs. Neelam Khurana
               </div>
             </div>
 
