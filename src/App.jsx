@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 // import { useState } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import GuestSite from "./GuestSite.jsx";
 // import PasswordGate from "./PasswordGate.jsx";
 
@@ -22,11 +23,14 @@ import GuestSite from "./GuestSite.jsx";
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/"    element={<GuestSite />} />
-      {/* <Route path="/os"  element={<OSRoute />} /> */}
-      {/* <Route path="/os/*" element={<OSRoute />} /> */}
-      <Route path="*"    element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/"    element={<GuestSite />} />
+        {/* <Route path="/os"  element={<OSRoute />} /> */}
+        {/* <Route path="/os/*" element={<OSRoute />} /> */}
+        <Route path="*"    element={<Navigate to="/" replace />} />
+      </Routes>
+      <SpeedInsights />
+    </>
   );
 }
